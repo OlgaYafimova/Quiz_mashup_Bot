@@ -1,3 +1,3 @@
-botkey = '5972181334:AAEEZaSjxnsf7n8cOkxyaoRU1tXuCdLZ8ao'
+botkey = 'here is the token'
 
 bot_nickname = 'quizmashup_bot'
