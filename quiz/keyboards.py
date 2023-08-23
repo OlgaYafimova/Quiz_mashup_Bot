@@ -1,13 +1,16 @@
-from aiogram import Bot, types
+from aiogram import types
 import sql_commands
-import json
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton, InlineKeyboardButton, \
     InlineKeyboardMarkup
 
 # клавиатура для выбора КАПИТАН или УЧАСТНИК
-who_you_are = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-capt = types.KeyboardButton("Капитан")
-participant = types.KeyboardButton("Одиночный участник")
+# who_you_are = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+# capt = types.KeyboardButton("Капитан")
+# participant = types.KeyboardButton("Одиночный участник")
+# who_you_are.add(capt, participant)
+who_you_are = types.InlineKeyboardMarkup(row_width=1)
+capt = types.InlineKeyboardButton("Капитан", callback_data="Капитан")
+participant = types.InlineKeyboardButton("Одиночный участник", callback_data="Одиночный участник")
 who_you_are.add(capt, participant)
 
 # клавиатура для выбора ДА или НЕТ
@@ -23,9 +26,13 @@ next_btn = types.KeyboardButton("Далее")
 edit_data.add(edit, next_btn)
 
 # клавиатура с кнопками ДАННЫЕ С ПРЕДЫДУЩИХ ИГР и НОВЫЕ ДАННЫЕ
-previous_or_new = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-previous = types.KeyboardButton("Данные с предыдущих игр")
-new = types.KeyboardButton("Новые данные")
+# previous_or_new = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+# previous = types.KeyboardButton("Данные с предыдущих игр")
+# new = types.KeyboardButton("Новые данные")
+# previous_or_new.add(previous, new)
+previous_or_new = types.InlineKeyboardMarkup(row_width=1)
+previous = types.InlineKeyboardButton("Данные с предыдущих игр", callback_data="Данные с предыдущих игр")
+new = types.InlineKeyboardButton("Новые данные", callback_data="Новые данные")
 previous_or_new.add(previous, new)
 
 # клавиатура для выбора соц.сети
@@ -37,14 +44,21 @@ other = types.KeyboardButton("Другое")
 soc_network.add(tlgrm, instgrm, fcbk, other)
 
 # клавиатура для завершения регистрации
-complete_registr = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-cmplt = types.KeyboardButton("Завершить регистрацию")
-edt = types.KeyboardButton("Редактировать данные")
+# complete_registr = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+# cmplt = types.KeyboardButton("Завершить регистрацию")
+# edt = types.KeyboardButton("Редактировать данные")
+# complete_registr.add(cmplt, edt)
+complete_registr = types.InlineKeyboardMarkup(row_width=1)
+cmplt = types.InlineKeyboardButton("Завершить регистрацию", callback_data="Завершить регистрацию")
+edt = types.InlineKeyboardButton("Редактировать данные", callback_data="Редактировать данные")
 complete_registr.add(cmplt, edt)
 
 # клавиатура с кнопкой ОК
-ok_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-ok_key = types.KeyboardButton("Ок")
+# ok_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+# ok_key = types.KeyboardButton("Ок")
+# ok_keyboard.add(ok_key)
+ok_keyboard = types.InlineKeyboardMarkup(row_width=1)
+ok_key = InlineKeyboardButton("Ок", callback_data="Ок")
 ok_keyboard.add(ok_key)
 
 # клавиатура с кнопкой "Всё верно"
@@ -69,11 +83,11 @@ amount_part_keyboard.row(btn6, btn7, btn8, btn9, btn10)
 
 
 # клавиатура для капитана со всеми датами игр
-game_dates_buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=1)
+game_dates_buttons = types.InlineKeyboardMarkup(row_width=1)
 all_dates = sql_commands.all_dates_from_game_dates()
 list_of_dates = []
 for index in range(0, len(all_dates)):
-    one_button_date = types.KeyboardButton(f"{all_dates[index][0]} ({all_dates[index][1]} {all_dates[index][2]})")
+    one_button_date = types.InlineKeyboardButton(f"{all_dates[index][0]} ({all_dates[index][1]} {all_dates[index][2]})", callback_data=f"{all_dates[index][0]} ({all_dates[index][1]} {all_dates[index][2]})")
     list_of_dates.append(one_button_date)
 
 for date in list_of_dates:
