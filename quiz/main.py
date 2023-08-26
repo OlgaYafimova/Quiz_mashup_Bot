@@ -31,26 +31,26 @@ class CaptainStates(StatesGroup):
     New_data_show = State()  # callback
     Complete_new_registr = State()  # callback
     Finish_edit_second_registration = State()  # message
-    Team_name = State()
-    Team_name_support = State()
-    Capt_name = State()
-    Capt_name_support = State()
-    Amount_participants = State()
-    Amount_participants_new = State()
-    Capt_phone_number = State()
-    Capt_phone_number_support = State()
-    Choose_soc_net = State()
-    Telegram = State()
-    Instagram = State()
-    Facebook = State()
-    Other_soc_net = State()
-    Link_support = State()
-    Lonely_player = State()
-    Lonely_player_support = State()
-    Capt_comments = State()
-    Capt_comments_support = State()
-    Capt_comments_support_enter = State()
-    Show_info_to_capt = State()
+    Team_name = State()  # message
+    Team_name_support = State()  # callback
+    Capt_name = State()  # message
+    Capt_name_support = State()  # callback
+    Amount_participants = State()  # callback
+    Amount_participants_new = State()  # callback
+    Capt_phone_number = State()  # message
+    Capt_phone_number_support = State()  # callback
+    Choose_soc_net = State()  # callback
+    Telegram = State()  # message
+    Instagram = State()  # message
+    Facebook = State()  # message
+    Other_soc_net = State()  # message
+    Link_support = State()  # callback
+    Lonely_player = State()  # callback
+    Lonely_player_support = State()  # callback
+    Capt_comments = State()  # callback
+    Capt_comments_support = State()  # callback
+    Capt_comments_support_enter = State()  # message
+    Show_info_to_capt = State()  # callback
     Finish_edit = State()
     Edit_game_date = State()
     Edit_team_name = State()
@@ -822,177 +822,202 @@ async def capt_agree_lonely_player_support(call: types.CallbackQuery, state: FSM
                                     text='Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
 
 
-# # хэндлер ловит нажатие кнопок ДА или НЕТ после вопроса 'Есть ли у вас комментарии?'
-# @dp.message_handler(state=CaptainStates.Capt_comments)
-# async def capt_comment_handler(message: types.Message, state: FSMContext):
-#     # при нажатии кнопки "Да"
-#     if message.text == 'Да':
-#         # запрашиваем у капитана комментарий, закрываем какие бы то ни было клавиатуры
-#         await bot.send_message(message.chat.id, "Внесите ваш комментарий ✏️",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         # присваиваем стейт, в котором будет ожидаться ввод текста с комментарием и сохранение его
-#         await CaptainStates.Capt_comments_support_enter.set()
-#     # при нажатии кнопки "Нет"
-#     elif message.text == 'Нет':
-#         # запишем как пустую строку
-#         capt_comment = ''
-#         await state.update_data(capt_comment=capt_comment)
-#         # пишем, выставляем клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
-#         await bot.send_message(message.chat.id, f"Сохранили!", reply_markup=keyboards.edit_data)
-#         # присваиваем следующий стейт (будет отлавливать кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ)
-#         await CaptainStates.Capt_comments_support.set()
-#     else:
-#         await message.answer("Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер ожидает ввод текста комментария
-# @dp.message_handler(state=CaptainStates.Capt_comments_support_enter)
-# async def capt_comment_enter_handler(message: types.Message, state: FSMContext):
-#     # сохраняем этот комментарий
-#     capt_comment = message.text
-#     await state.update_data(capt_comment=capt_comment)
-#     # кинули в польз-ля сообщение, открыли клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
-#     await bot.send_message(message.chat.id, text="Записали 👍", reply_markup=keyboards.edit_data)
-#     await CaptainStates.Capt_comments_support.set()
-#
-#
-# # хэндлер ловит кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ после сохранения комментария
-# @dp.message_handler(state=CaptainStates.Capt_comments_support)
-# async def capt_comment_support_handler(message: types.Message):
-#     # при нажатии кнопки "Редактировать"
-#     if message.text == 'Редактировать':
-#         # снова задаём вопрос
-#         await bot.send_message(message.chat.id, text='Есть ли у вас комментарии? 📝',
-#                                reply_markup=keyboards.yes_or_no)
-#         # возвращаем поль-ля в предыдущее состояние
-#         await CaptainStates.Capt_comments.set()
-#     # если нажата кнопка "Далее"
-#     elif message.text == 'Далее':
-#         # пишем, что дальше будет вывод всей внесённой ранее информации
-#         await bot.send_message(message.chat.id,
-#                                text='следующее сообщение будет выводом всей введённой ранее информации',
-#                                reply_markup=keyboards.ok_keyboard)
-#         # присваиваем следующее состояние
-#         await CaptainStates.Show_info_to_capt.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
-#
-#
-# # здесь шлём сообщение капитану со всей введённой им информацией, чтобы он проверил всё ли ок
-# @dp.message_handler(state=CaptainStates.Show_info_to_capt)
-# async def show_info_to_captain(message: types.Message, state: FSMContext):
-#     # вытягиваем всё что есть в fsm
-#     data = await state.get_data()
-#     game_date_user_style_from_fsm = data.get('game_date')
-#     n_day = game_date_user_style_from_fsm[0:2]
-#     n_month = game_date_user_style_from_fsm[3:5]
-#     n_year = game_date_user_style_from_fsm[6:10]
-#     game_date_db_style = f"{n_year}{n_month}{n_day}"
-#     week_day_from_fsm = data.get('week_day')
-#     game_time_from_fsm = data.get('game_time')
-#     team_name_from_fsm = data.get('team_name')
-#     capt_telegram_id_from_fsm = data.get('capt_telegram_id')
-#     capt_name_from_fsm = data.get('capt_name')
-#     capt_referral_from_fsm = data.get('capt_referral')
-#     amount_players_from_fsm = data.get('amount_players')
-#     capt_phone_number_from_fsm = data.get('capt_phone_number')
-#     capt_link_from_fsm = data.get('capt_link')
-#     capt_agree_from_fsm = str(data.get('capt_agree'))
-#     capt_comment_from_fsm = data.get('capt_comment')
-#     capt_telegram_id_game_date_from_fsm = (str(data.get('capt_telegram_id')) + game_date_db_style)
-#     # в таком виде передаём в базу для записи
-#     date_string_for_db = f"{n_year}-{n_month}-{n_day} {game_time_from_fsm}:00"
-#     if message.text == "Ок":
-#         # капитан СОГЛАСЕН НА ОДИНОКОГО ИГРОКА
-#         if capt_agree_from_fsm is True or capt_agree_from_fsm == 'True':
-#             # у капитана НЕТ КОММЕНТАРИЕВ
-#             if len(capt_comment_from_fsm) == 0:
-#                 await bot.send_message(message.chat.id,
-#                                        text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
-#                                             f'День недели: *{week_day_from_fsm}*\n'
-#                                             f'Время игры: *{game_time_from_fsm}*\n'
-#                                             f'Название команды: *{team_name_from_fsm}*\n'
-#                                             f'Имя капитана: *{capt_name_from_fsm}*\n'
-#                                             f'Количество участников в команде: *{amount_players_from_fsm}*\n'
-#                                             f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
-#                                             f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
-#                                             f'Согласен/согласна присоединить одиноких игрока/игроков',
-#                                        reply_markup=keyboards.complete_registr,
-#                                        parse_mode='Markdown')
-#             # у капитана ЕСТЬ КОММЕНТАРИЙ
-#             else:
-#                 await bot.send_message(message.chat.id,
-#                                        text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
-#                                             f'День недели: *{week_day_from_fsm}*\n'
-#                                             f'Время игры: *{game_time_from_fsm}*\n'
-#                                             f'Название команды: *{team_name_from_fsm}*\n'
-#                                             f'Имя капитана: *{capt_name_from_fsm}*\n'
-#                                             f'Количество участников в команде: *{amount_players_from_fsm}*\n'
-#                                             f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
-#                                             f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
-#                                             f'Согласен/согласна присоединить одиноких игрока/игроков\n'
-#                                             f'Ваш комментарий: *{capt_comment_from_fsm}*',
-#                                        reply_markup=keyboards.complete_registr,
-#                                        parse_mode='Markdown')
-#         # капитан НЕ СОГЛАСЕН НА ОДИНОЧЕК
-#         else:
-#             # у капитана НЕТ КОММЕНТАРИЕВ
-#             if capt_comment_from_fsm is None or len(capt_comment_from_fsm) == 0:
-#                 await bot.send_message(message.chat.id,
-#                                        text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
-#                                             f'День недели: *{week_day_from_fsm}*\n'
-#                                             f'Время игры: *{game_time_from_fsm}*\n'
-#                                             f'Название команды: *{team_name_from_fsm}*\n'
-#                                             f'Имя капитана: *{capt_name_from_fsm}*\n'
-#                                             f'Количество участников в команде: *{amount_players_from_fsm}*\n'
-#                                             f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
-#                                             f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
-#                                             f'Не согласен/не согласна присоединить одиноких игрока/игроков',
-#                                        reply_markup=keyboards.complete_registr,
-#                                        parse_mode='Markdown')
-#             # у капитана ЕСТЬ КОММЕНТАРИЙ
-#             else:
-#                 await bot.send_message(message.chat.id,
-#                                        text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
-#                                             f'День недели: *{week_day_from_fsm}*\n'
-#                                             f'Время игры: *{game_time_from_fsm}*\n'
-#                                             f'Название команды: *{team_name_from_fsm}*\n'
-#                                             f'Имя капитана: *{capt_name_from_fsm}*\n'
-#                                             f'Количество участников в команде: *{amount_players_from_fsm}*\n'
-#                                             f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
-#                                             f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
-#                                             f'Не согласен/не согласна присоединить одиноких игрока/игроков\n'
-#                                             f'Ваш комментарий: *{capt_comment_from_fsm}*',
-#                                        reply_markup=keyboards.complete_registr,
-#                                        parse_mode='Markdown')
-#     elif message.text == "Завершить регистрацию":
-#         # СОХРАНЯЕМ В БАЗУ ДАННЫХ
-#         sql_commands.saving_cap_info_to_database(capt_telegram_id_game_date_from_fsm, capt_telegram_id_from_fsm,
-#                                                  date_string_for_db, week_day_from_fsm, capt_name_from_fsm,
-#                                                  capt_phone_number_from_fsm, capt_link_from_fsm, capt_referral_from_fsm,
-#                                                  team_name_from_fsm, amount_players_from_fsm,
-#                                                  capt_agree_from_fsm, capt_comment_from_fsm)
-#         await bot.send_message(message.chat.id, text="Поздравляем, вы зарегистрированы на игру! 🥳",
-#                                reply_markup=types.ReplyKeyboardRemove())
-#         # ШЛЁМ РЕФЕРАЛЬНУЮ ССЫЛКУ ДЛЯ ПРИГЛАШЕНИЯ УЧАСТНИКОВ
-#         await bot.send_message(message.chat.id,
-#                                text='Можете пригласить участников в свою команду, выслав им реферальную ссылку ⬇️',
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await bot.send_message(message.chat.id, text=f"{capt_referral_from_fsm}",
-#                                reply_markup=types.ReplyKeyboardRemove())
-#         await state.finish()
-#     elif message.text == "Редактировать данные":
-#         await bot.send_message(message.chat.id,
-#                                text='Выберите команду и нажмите на неё для редактирования конкретных данных',
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         # шлём список команд для редактирования данных в формате "/команда"
-#         await bot.send_message(message.chat.id, text=f'{commands.capt_commands}',
-#                                reply_markup=types.ReplyKeyboardRemove())
-#         await CaptainStates.Finish_edit.set()
-#     else:
-#         await message.answer('Что-то не так. Попробуйте ещё раз 🔁')
-#
-#
+# хэндлер ловит нажатие кнопок ДА или НЕТ после вопроса 'Есть ли у вас комментарии?'
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Capt_comments)
+async def capt_comment_handler(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    # при нажатии кнопки "Да"
+    if call['data'] == 'Да':
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # запрашиваем у капитана комментарий, закрываем какие бы то ни было клавиатуры
+        sent_message = await bot.send_message(chat_id, text="Внесите ваш комментарий ✏️")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        # присваиваем стейт, в котором будет ожидаться ввод текста с комментарием и сохранение его
+        await CaptainStates.Capt_comments_support_enter.set()
+    # при нажатии кнопки "Нет"
+    elif call['data'] == 'Нет':
+        # запишем как пустую строку
+        capt_comment = ''
+        await state.update_data(capt_comment=capt_comment)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем, выставляем клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
+        sent_message = await bot.send_message(chat_id, text="Сохранили!", reply_markup=keyboards.edit_data)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        # присваиваем следующий стейт (будет отлавливать кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ)
+        await CaptainStates.Capt_comments_support.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+# хэндлер ожидает ввод текста комментария
+@dp.message_handler(state=CaptainStates.Capt_comments_support_enter)
+async def capt_comment_enter_handler(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сохраняем этот комментарий
+    capt_comment = message.text
+    await state.update_data(capt_comment=capt_comment)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    # кинули в польз-ля сообщение, открыли клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Записали 👍",
+                                reply_markup=keyboards.edit_data)
+    await CaptainStates.Capt_comments_support.set()
+
+
+# хэндлер ловит кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ после сохранения комментария
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Capt_comments_support)
+async def capt_comment_support_handler(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    # при нажатии кнопки "Редактировать"
+    if call['data'] == 'Редактировать':
+        # снова задаём вопрос
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Есть ли у вас комментарии? 📝',
+                                    reply_markup=keyboards.yes_or_no)
+        # возвращаем поль-ля в предыдущее состояние
+        await CaptainStates.Capt_comments.set()
+    # если нажата кнопка "Далее"
+    elif call['data'] == 'Далее':
+        # пишем, что дальше будет вывод всей внесённой ранее информации
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='следующее сообщение будет выводом всей введённой ранее информации',
+                                    reply_markup=keyboards.ok_keyboard)
+        # присваиваем следующее состояние
+        await CaptainStates.Show_info_to_capt.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
+
+
+# здесь шлём сообщение капитану со всей введённой им информацией, чтобы он проверил всё ли ок
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Show_info_to_capt)
+async def show_info_to_captain(call: types.CallbackQuery, state: FSMContext):
+    # вытягиваем всё что есть в fsm
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+        game_date_user_style_from_fsm = data['game_date']
+        n_day = game_date_user_style_from_fsm[0:2]
+        n_month = game_date_user_style_from_fsm[3:5]
+        n_year = game_date_user_style_from_fsm[6:10]
+        game_date_db_style = f"{n_year}{n_month}{n_day}"
+        week_day_from_fsm = data['week_day']
+        game_time_from_fsm = data['game_time']
+        team_name_from_fsm = data['team_name']
+        capt_telegram_id_from_fsm = data['capt_telegram_id']
+        capt_name_from_fsm = data['capt_name']
+        capt_referral_from_fsm = data['capt_referral']
+        amount_players_from_fsm = data['amount_players']
+        capt_phone_number_from_fsm = data['capt_phone_number']
+        capt_link_from_fsm = data['capt_link']
+        capt_agree_from_fsm = str(data['capt_agree'])
+        capt_comment_from_fsm = data['capt_comment']
+        capt_telegram_id_game_date_from_fsm = (str(data['capt_telegram_id']) + game_date_db_style)
+    chat_id = call.message.chat.id
+    # в таком виде передаём в базу для записи
+    date_string_for_db = f"{n_year}-{n_month}-{n_day} {game_time_from_fsm}:00"
+    if call['data'] == "Ок":
+        await bot.delete_message(chat_id=chat_id, message_id=sent_message_id)
+        # капитан СОГЛАСЕН НА ОДИНОКОГО ИГРОКА
+        if capt_agree_from_fsm is True or capt_agree_from_fsm == 'True':
+            # у капитана НЕТ КОММЕНТАРИЕВ
+            if len(capt_comment_from_fsm) == 0:
+                sent_info_message = \
+                    await bot.send_message(chat_id,
+                                           text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
+                                                f'День недели: *{week_day_from_fsm}*\n'
+                                                f'Время игры: *{game_time_from_fsm}*\n'
+                                                f'Название команды: *{team_name_from_fsm}*\n'
+                                                f'Имя капитана: *{capt_name_from_fsm}*\n'
+                                                f'Количество участников в команде: *{amount_players_from_fsm}*\n'
+                                                f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
+                                                f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
+                                                f'Согласен/согласна присоединить одиноких игрока/игроков',
+                                           parse_mode='Markdown')
+            # у капитана ЕСТЬ КОММЕНТАРИЙ
+            else:
+                sent_info_message = \
+                    await bot.send_message(chat_id,
+                                           text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
+                                                f'День недели: *{week_day_from_fsm}*\n'
+                                                f'Время игры: *{game_time_from_fsm}*\n'
+                                                f'Название команды: *{team_name_from_fsm}*\n'
+                                                f'Имя капитана: *{capt_name_from_fsm}*\n'
+                                                f'Количество участников в команде: *{amount_players_from_fsm}*\n'
+                                                f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
+                                                f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
+                                                f'Согласен/согласна присоединить одиноких игрока/игроков\n'
+                                                f'Ваш комментарий: *{capt_comment_from_fsm}*',
+                                           parse_mode='Markdown')
+        # капитан НЕ СОГЛАСЕН НА ОДИНОЧЕК
+        else:
+            # у капитана НЕТ КОММЕНТАРИЕВ
+            if capt_comment_from_fsm is None or len(capt_comment_from_fsm) == 0:
+                sent_info_message = \
+                    await bot.send_message(chat_id,
+                                           text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
+                                                f'День недели: *{week_day_from_fsm}*\n'
+                                                f'Время игры: *{game_time_from_fsm}*\n'
+                                                f'Название команды: *{team_name_from_fsm}*\n'
+                                                f'Имя капитана: *{capt_name_from_fsm}*\n'
+                                                f'Количество участников в команде: *{amount_players_from_fsm}*\n'
+                                                f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
+                                                f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
+                                                f'Не согласен/не согласна присоединить одиноких игрока/игроков',
+                                           parse_mode='Markdown')
+            # у капитана ЕСТЬ КОММЕНТАРИЙ
+            else:
+                sent_info_message = \
+                    await bot.send_message(chat_id,
+                                           text=f'Дата игры: *{game_date_user_style_from_fsm}*\n'
+                                                f'День недели: *{week_day_from_fsm}*\n'
+                                                f'Время игры: *{game_time_from_fsm}*\n'
+                                                f'Название команды: *{team_name_from_fsm}*\n'
+                                                f'Имя капитана: *{capt_name_from_fsm}*\n'
+                                                f'Количество участников в команде: *{amount_players_from_fsm}*\n'
+                                                f'Ваш номер телефона: *{capt_phone_number_from_fsm}*\n'
+                                                f'Ссылка на вашу соц.сеть: *{capt_link_from_fsm}*\n'
+                                                f'Не согласен/не согласна присоединить одиноких игрока/игроков\n'
+                                                f'Ваш комментарий: *{capt_comment_from_fsm}*',
+                                           parse_mode='Markdown')
+        sent_message = await bot.send_message(chat_id, text='Всё ли верно?', reply_markup=keyboards.complete_registr)
+        await state.update_data(sent_message_id=sent_message.message_id,
+                                sent_info_message_id=sent_info_message.message_id)
+    elif call['data'] == "Завершить регистрацию":
+        # СОХРАНЯЕМ В БАЗУ ДАННЫХ
+        sql_commands.saving_cap_info_to_database(capt_telegram_id_game_date_from_fsm, capt_telegram_id_from_fsm,
+                                                 date_string_for_db, week_day_from_fsm, capt_name_from_fsm,
+                                                 capt_phone_number_from_fsm, capt_link_from_fsm, capt_referral_from_fsm,
+                                                 team_name_from_fsm, amount_players_from_fsm,
+                                                 capt_agree_from_fsm, capt_comment_from_fsm)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Поздравляем, вы зарегистрированы на игру! 🥳\n"
+                                         "Можете пригласить участников в свою команду, выслав им реферальную ссылку ⬇️")
+        # ШЛЁМ РЕФЕРАЛЬНУЮ ССЫЛКУ ДЛЯ ПРИГЛАШЕНИЯ УЧАСТНИКОВ
+        await bot.send_message(chat_id, text=f"{capt_referral_from_fsm}")
+        await state.finish()
+    elif call['data'] == "Редактировать данные":
+        async with state.proxy() as data:
+            sent_message_id = data['sent_message_id']
+            sent_info_message_id = data['sent_info_message_id']
+        await bot.delete_message(chat_id=chat_id, message_id=sent_info_message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Выберите команду и нажмите на неё для редактирования конкретных данных')
+        # шлём список команд для редактирования данных в формате "/команда"
+        sent_message = await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                                   text=f'{commands.capt_commands}')
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Finish_edit.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Что-то не так. Попробуйте ещё раз 🔁')
+
+
 # """
 #
 # ------------------------------------->>>> БЛОК КОМАНД ДЛЯ РЕДАКТИРОВАНИЯ ДАННЫХ <<<<------------------------------------
@@ -1564,8 +1589,7 @@ async def cap_second_reg_show_new_data(call: types.CallbackQuery, state: FSMCont
                                                 f'Не согласен/не согласна присоединить одиноких игрока/игроков\n'
                                                 f'Ваш комментарий: *{capt_comment_from_fsm}*',
                                            parse_mode='Markdown')
-        sent_message = await bot.send_message(chat_id, text='Всё ли верно?',
-                                              reply_markup=keyboards.complete_registr)
+        sent_message = await bot.send_message(chat_id, text='Всё ли верно?', reply_markup=keyboards.complete_registr)
         await state.update_data(sent_message_id=sent_message.message_id,
                                 sent_info_message_id=sent_info_message.message_id)
         await CaptainStates.Complete_new_registr.set()
