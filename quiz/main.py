@@ -68,16 +68,16 @@ class CaptainStates(StatesGroup):
     Edit_game_date_second = State()  # callback
     Edit_team_name_second = State()  # message
     Edit_capt_name_second = State()  # message
-    Edit_amount_participants_second = State()
-    Edit_capt_phone_second = State()
-    Edit_capt_link_second = State()
-    Edit_capt_link_telegram_second = State()
-    Edit_capt_link_instagram_second = State()
-    Edit_capt_link_facebook_second = State()
-    Edit_capt_link_other_soc_net_second = State()
-    Edit_lonely_player_second = State()
-    Edit_capt_comment_second = State()
-    Edit_capt_comment_enter_second = State()
+    Edit_amount_participants_second = State()  # callback
+    Edit_capt_phone_second = State()  # message
+    Edit_capt_link_second = State()  # callback
+    Edit_capt_link_telegram_second = State()  # message
+    Edit_capt_link_instagram_second = State()  # message
+    Edit_capt_link_facebook_second = State()  # message
+    Edit_capt_link_other_soc_net_second = State()  # message
+    Edit_lonely_player_second = State()  # callback
+    Edit_capt_comment_second = State()  # callback
+    Edit_capt_comment_enter_second = State()  # message
 
 
 class PlayersStates(StatesGroup):
@@ -397,331 +397,431 @@ async def captain_or_participant(call: types.CallbackQuery, state: FSMContext):
                                          "Жмите кнопочки ⬇️")
 
 
-# """
-#
-# -------------------------------------->>>> БЛОК КОДА ДЛЯ РЕГИСТРАЦИИ КАПИТАНА <<<<--------------------------------------
-#
-# """
-#
-#
-# # ЛОВИТ НАЗВАНИЕ КОМАНДЫ
-# @dp.message_handler(state=CaptainStates.Team_name)
-# async def team_name_handler(message: types.Message, state: FSMContext):
-#     # сюда попадает НАЗВАНИЕ КОМАНДЫ, вписанное капитаном
-#     # сохраняем НАЗВАНИЕ КОМАНДЫ в переменную "team_name"
-#     team_name = message.text
-#     # обновляем СОСТОЯНИЕ (Team_name) данными,
-#     # ключ - 'team_name', значение - НАЗВАНИЕ КОМАНДЫ
-#     await state.update_data(team_name=team_name)
-#     # шлём польз-лю сообщение что данные сохранены, провешиваем клавиатуру 'Редактировать - Далее'
-#     await bot.send_message(message.chat.id, f"Название команды: *{team_name}*.\nСохраняем 👌",
-#                            reply_markup=keyboards.edit_data, parse_mode='Markdown')
-#     await CaptainStates.Team_name_support.set()
-#
-#
-# # хэндлер ловит кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ
-# @dp.message_handler(state=CaptainStates.Team_name_support)
-# async def team_name_support(message: types.Message):
-#     if message.text == 'Редактировать':
-#         # просит поль-ля снова ввести название команды
-#         await bot.send_message(message.chat.id, text='Введите новое название команды',
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Team_name.set()
-#     # обработка кнопки "Далее", запрос имени (для след.состояния), пропуск в следующее состояние Capt_name
-#     elif message.text == 'Далее':
-#         await bot.send_message(message.chat.id, text="Напишите ваше имя",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Capt_name.set()
-#     else:
-#         await bot.send_message(message.chat.id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# # ЛОВИТ имя КАПИТАНА
-# @dp.message_handler(state=CaptainStates.Capt_name)
-# async def captain_nik_handler(message: types.Message, state: FSMContext):
-#     # сюда попадает имя КАПИТАНА
-#     # сохраняем ИМЯ КАПИТАНА в переменную 'capt_name'
-#     capt_name = message.text
-#     # создаём реферальный код для капитана
-#     data = await state.get_data()
-#     capt_telegram_id_from_fsm = data.get('capt_telegram_id')
-#     capt_referral = f"https://t.me/{config.bot_nickname}?start={capt_telegram_id_from_fsm}"
-#     # обновляем СОСТОЯНИЕ (Capt_name) данными,
-#     # ключ - 'capt_name', значение - НИК КАПИТАНА КОМАНДЫ
-#     # ключ - 'capt_referral', значение - РЕФЕРАЛЬНЫЙ КОД
-#     await state.update_data(capt_name=capt_name, capt_referral=capt_referral)
-#     # шлём капитану сообщение, что данные сохранены, провешиваем клавиатуру 'Редактировать', 'Далее'
-#     await bot.send_message(message.chat.id, f"Ваше имя сохранено, *{capt_name}* 😉",
-#                            reply_markup=keyboards.edit_data, parse_mode='Markdown')
-#     await CaptainStates.Capt_name_support.set()
-#
-#
-# @dp.message_handler(state=CaptainStates.Capt_name_support)
-# async def capt_name_support(message: types.Message):
-#     # этот кусок кода срабатывает при нажатии кнопки 'Редактировать'
-#     if message.text == 'Редактировать':
-#         # запрашивает повторное введение имени
-#         await bot.send_message(message.chat.id, text='Напишите ваше имя',
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Capt_name.set()
-#     # обработка кнопки "Далее", запрос кол-ва игроков для след.состония, перевод в след.состояние
-#     elif message.text == 'Далее':
-#         await bot.send_message(message.chat.id, text='Укажите количество игроков. (Можно примерно).',
-#                                reply_markup=keyboards.amount_part_keyboard)
-#         await CaptainStates.Amount_participants.set()
-#     else:
-#         await bot.send_message(message.chat.id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# # ЛОВИТ КОЛИЧЕСТВО ИГРОКОВ (ИЗ ИНЛАЙН-КНОПОК)
-# @dp.callback_query_handler(text_contains='', state=CaptainStates.Amount_participants)
-# async def amount_of_team(call: types.CallbackQuery, state: FSMContext):
-#     # сюда попадает КОЛИЧЕСТВО ИГРОКОВ в виде callback_query
-#     amount_players = int(call['data'])
-#     await state.update_data(amount_players=amount_players)
-#     # шлём польз-лю сообщение, что данные сохранены, провешиваем клавиатуру 'Редактировать', 'Далее'
-#     await bot.send_message(call.message.chat.id, text=f"Количество игроков: *{call['data']}*. \nЗаписано 👍",
-#                            reply_markup=keyboards.edit_data, parse_mode='Markdown')
-#     # назначаем состояние для след. хэндлера, будет ловить "Редактировать - Далее"
-#     await CaptainStates.Amount_participants_new.set()
-#
-#
-# # здесь обрабатываем нажатие кнопок РЕДАКТИРОВАТЬ или ДАЛЕЕ
-# @dp.message_handler(state=CaptainStates.Amount_participants_new)
-# async def edit_amount_or_not(message: types.Message):
-#     if message.text == "Редактировать":
-#         await bot.send_message(message.chat.id, text='Укажите количество игроков. (Можно примерно)',
-#                                reply_markup=keyboards.amount_part_keyboard)
-#         await CaptainStates.Amount_participants.set()
-#     elif message.text == 'Далее':
-#         await bot.send_message(message.chat.id,
-#                                text="Впишите ваш номер телефона. \nБот принимает только польские номера 🇵🇱\n"
-#                                     "Начало должно быть +48 или 48", reply_markup=types.ReplyKeyboardRemove())
-#         await CaptainStates.Capt_phone_number.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n'
-#                              'Нажимайте кнопочки ⬇️')
-#
-#
-# # ЛОВИТ НОМЕР ТЕЛЕФОНА КАПИТАНА
-# @dp.message_handler(state=CaptainStates.Capt_phone_number)
-# async def capt_phone(message: types.Message, state: FSMContext):
-#     # сюда попадает НОМЕР ТЕЛЕФОНА КАПИТАНА
-#     # обрабатываем исключения, которые могут возникнуть, если вписать вместо цифр буквы
-#     try:
-#         # сохраняем НОМЕР ТЕЛЕФОНА (тип данных пока 'str')
-#         capt_phone_number = message.text
-#         # очищаем строчку с номером от "+", "(", ")" и пробелов, приводим к типу 'int'
-#         capt_phone_number_int = int(
-#             capt_phone_number.replace('+', '').replace(' ', '').replace('(', '').replace(')', ''))
-#     # в случае возникновение исключения (были введены буквы)
-#     except ValueError:
-#         # отравляем сообщение, просим повторно ввести телефон
-#         await message.answer(text="Неверный ввод.\nПопробуйте ещё раз 🔁")
-#     # когда всё внесено правильно (цифрами)
-#     else:
-#         # проверяем, чтобы телефон был польским, начинался с +48 или 48
-#         # проверяем пер-ю "capt_phone_number", т.к. это строка
-#         if capt_phone_number.startswith('+48') or capt_phone_number.startswith('48'):
-#             # также польский номер без кода +48 должен содержать в себе 9 цифр
-#             # проверяем это длиной строки, в кот-ю мы превратили наш номер без +() и пробелов и из кот-й удалили 48
-#             if len(str(capt_phone_number_int).replace('48', '')) == 9:
-#                 # записываем телефон в состояние по ключу "capt_phone_number", в виде строки, без пробелов
-#                 await state.update_data(capt_phone_number=capt_phone_number.replace(' ', ''))
-#                 # пишем польз-лю, что данные сохранены, открываем клавиатуру 'Редактировать', 'Далее'
-#                 await bot.send_message(message.chat.id, text=f"Номер телефона {capt_phone_number} сохранён 🥳",
-#                                        reply_markup=keyboards.edit_data)
-#                 await CaptainStates.Capt_phone_number_support.set()
-#             # если в номере больше 9 цифр
-#             elif len(str(capt_phone_number_int).replace('48', '')) > 9:
-#                 # пишем об этом польз-лю
-#                 await message.answer(text="В вашем номере больше 9 цифр, попробуйте внимательнее",
-#                                      reply_markup=types.ReplyKeyboardRemove())
-#             # если в номере меньше 9 цифр
-#             elif len(str(capt_phone_number_int).replace('48', '')) < 9:
-#                 # пишем об этом польз-лю
-#                 await message.answer(text="В вашем номере меньше 9 цифр, попробуйте внимательнее",
-#                                      reply_markup=types.ReplyKeyboardRemove())
-#         # если телефон не начинается с +48 или 48, то он явно не польский
-#         else:
-#             # запрашиваем повторный ввод
-#             await message.answer(text="Введите польский номер 🇵🇱\n(начинается с +48 или 48) 😊",
-#                                  reply_markup=types.ReplyKeyboardRemove())
-#
-#
-# @dp.message_handler(state=CaptainStates.Capt_phone_number_support)
-# async def capt_phone_number_support(message: types.Message):
-#     if message.text == 'Редактировать':
-#         await bot.send_message(message.chat.id, text='Введите номер телефона ещё раз 🔁\n'
-#                                                      'Бот принимает только польские номера 🇵🇱\n'
-#                                                      'Начало должно быть +48 или 48',
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Capt_phone_number.set()
-#     # обработка кнопки "Далее", запрос соц.сети (для след.состояния), пропуск в следующее состояние
-#     elif message.text == 'Далее':
-#         await bot.send_message(message.chat.id, text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться.",
-#                                reply_markup=keyboards.soc_network)
-#         await CaptainStates.Choose_soc_net.set()
-#     else:
-#         await bot.send_message(message.chat.id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер-"маршрутизатор", ловит нажатие кнопок "Telegram", "Instagram", "Facebook"
-# @dp.message_handler(state=CaptainStates.Choose_soc_net)
-# async def capt_soc_net(message: types.Message):
-#     # при нажатии кнопки пишем сообщение, переводим в следующий стейт
-#     if message.text == "Telegram":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш аккаунт Telegram",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Telegram.set()
-#     elif message.text == "Instagram":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш Instagram аккаунт",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Instagram.set()
-#     elif message.text == "Facebook":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш Facebook аккаунт",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Facebook.set()
-#     elif message.text == "Другое":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку", reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Other_soc_net.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n'
-#                              'Нажимайте кнопочки ⬇️')
-#
-#
-# # хэндлер для введения ссылки на телеграм
-# @dp.message_handler(state=CaptainStates.Telegram)
-# async def capt_link_telegram(message: types.Message, state: FSMContext):
-#     # сюда попадает ССЫЛКА НА ТЕЛЕГРАМ КАПИТАНА
-#     # проверка, чтобы ссылка на телегу начиналась с https://t.me/ или @ не была пустая
-#     if (message.text.startswith('https://t.me/') and len(message.text[13:]) != 0) or (
-#             message.text.startswith("@") and len(message.text[1:]) != 0):
-#         # сохраняем ссылку
-#         cap_link_telegram = message.text
-#         # записываем её в пространство имён состояния под ключом "capt_link"
-#         await state.update_data(capt_link=cap_link_telegram)
-#         # пишем сообщение о сохранении данных, открываем клавиатуру для редактир-я или перехода дальше
-#         await bot.send_message(message.chat.id, "Ссылка сохранена ✅", reply_markup=keyboards.edit_data)
-#         await CaptainStates.Link_support.set()
-#     else:
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер для введения ссылки на инстаграм
-# @dp.message_handler(state=CaptainStates.Instagram)
-# async def capt_link_instagram(message: types.Message, state: FSMContext):
-#     # сюда попадает ССЫЛКА НА ИНСТАГРАМ КАПИТАНА
-#     # проверка, чтобы ссылка на инсту начиналась с чего надо и не была пустая
-#     if (message.text.startswith('https://www.instagram.com/') and len(message.text[26:]) != 0) or \
-#             (message.text.startswith('https://instagram.com/') and len(message.text[22:]) != 0):
-#         # сохраняем ссылку
-#         capt_link_inst = message.text
-#         # записываем её в пространство имён состояния под ключом "capt_link"
-#         await state.update_data(capt_link=capt_link_inst)
-#         # пишем, что всё сохранено, открываем клавиатуру для редактир-я или перехода дальше
-#         await bot.send_message(message.chat.id, "Ссылка на Instagram сохранена ✅", reply_markup=keyboards.edit_data)
-#         await CaptainStates.Link_support.set()
-#     # если ссылка начинается иначе
-#     else:
-#         # просим ещё раз написать
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер для введения ссылки на фэйсбук
-# @dp.message_handler(state=CaptainStates.Facebook)
-# async def capt_link_facebook(message: types.Message, state: FSMContext):
-#     # сюда попадает ССЫЛКА НА ФЭЙСБУК КАПИТАНА
-#     # проверка, чтобы ссылка на фэйсбук начиналась с https://www.facebook.com/ и не была пустая
-#     if message.text.startswith('https://www.facebook.com/') and len(message.text[25:]) != 0:
-#         # сохраняем ссылку
-#         capt_link_fcbk = message.text
-#         # записываем её в пространство имён состояния под ключом "capt_link"
-#         await state.update_data(capt_link=capt_link_fcbk)
-#         # пишем сообщение, открываем клавиатуру для редактир-я или перехода дальше
-#         await bot.send_message(message.chat.id, "Ссылка на Facebook сохранена ✅", reply_markup=keyboards.edit_data)
-#         await CaptainStates.Link_support.set()
-#     # если ссылка начинается иначе
-#     else:
-#         # просим ещё раз написать
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер для ловли ссылки на другую соц.сеть
-# @dp.message_handler(state=CaptainStates.Other_soc_net)
-# async def capt_link_other_soc_net(message: types.Message, state: FSMContext):
-#     capt_link_other = message.text
-#     await state.update_data(capt_link=capt_link_other)
-#     await bot.send_message(message.chat.id, "Ссылка сохранена ✅", reply_markup=keyboards.edit_data)
-#     await CaptainStates.Link_support.set()
-#
-#
-# @dp.message_handler(state=CaptainStates.Link_support)
-# async def capt_link_telegram_support(message: types.Message):
-#     if message.text == 'Редактировать':
-#         # возвращаем юзера в предыдущий стейт, где он выбирал соц.сеть
-#         await bot.send_message(message.chat.id,
-#                                text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться",
-#                                reply_markup=keyboards.soc_network)
-#         await CaptainStates.Choose_soc_net.set()
-#     # если нажата кнопка 'Далее'
-#     elif message.text == 'Далее':
-#         # задаём вопрос для след.стейта
-#         await bot.send_message(message.chat.id, text="Готовы ли вы принять в вашу команду игрока/ов? 👤",
-#                                reply_markup=keyboards.yes_or_no)
-#         # переводим в следующий стейт
-#         await CaptainStates.Lonely_player.set()
-#     else:
-#         await bot.send_message(message.chat.id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер ловит нажание кнопок ДА или НЕТ после вопроса об одиноких игроках
-# @dp.message_handler(state=CaptainStates.Lonely_player)
-# async def capt_agree_lonely_player(message: types.Message, state: FSMContext):
-#     # при нажатии кнопки "Да"
-#     if message.text == 'Да':
-#         # записываем согласие в переменную в виде булевого значения "True"
-#         capt_agree = True
-#         # записываем это в пространство имён состояния
-#         await state.update_data(capt_agree=capt_agree)
-#         # шлём сообщение, выставляем клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
-#         await bot.send_message(message.chat.id, "Так и запишем!", reply_markup=keyboards.edit_data)
-#         # присваиваем следующий стейт (будет отлавливать кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ)
-#         await CaptainStates.Lonely_player_support.set()
-#     # при нажатии кнопки "Нет"
-#     elif message.text == 'Нет':
-#         # записываем несогласие в переменную в виде булевого значения "False"
-#         capt_agree = False
-#         # записываем это в пространство имён состояния
-#         await state.update_data(capt_agree=capt_agree)
-#         # шлём сообщение, выставляем клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
-#         await bot.send_message(message.chat.id, "Так и запишем!", reply_markup=keyboards.edit_data)
-#         # присваиваем следующий стейт (будет отлавливать кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ)
-#         await CaptainStates.Lonely_player_support.set()
-#     else:
-#         await message.answer("Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер ловит кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ (после сохранения ответа о согласии)
-# @dp.message_handler(state=CaptainStates.Lonely_player_support)
-# async def capt_agree_lonely_player_support(message: types.Message):
-#     # при нажатии кнопки "Редактировать"
-#     if message.text == 'Редактировать':
-#         # снова задаём вопрос
-#         await bot.send_message(message.chat.id, text='Готовы ли вы принять в вашу команду игрока/ов? 👤 ',
-#                                reply_markup=keyboards.yes_or_no)
-#         # возвращаем поль-ля в предыдущее состояние
-#         await CaptainStates.Lonely_player.set()
-#     # если нажата кнопка "Далее"
-#     elif message.text == 'Далее':
-#         # задаём вопрос для следующего состояния, вывешиваем клавиатуру ДА или НЕТ
-#         await bot.send_message(message.chat.id, text='Есть ли у вас комментарии? 📝', reply_markup=keyboards.yes_or_no)
-#         # присваиваем следующее состояние
-#         await CaptainStates.Capt_comments.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
-#
-#
+"""
+
+-------------------------------------->>>> БЛОК КОДА ДЛЯ РЕГИСТРАЦИИ КАПИТАНА <<<<--------------------------------------
+
+"""
+
+
+# ЛОВИТ НАЗВАНИЕ КОМАНДЫ
+@dp.message_handler(state=CaptainStates.Team_name)
+async def team_name_handler(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает НАЗВАНИЕ КОМАНДЫ, вписанное капитаном
+    # сохраняем НАЗВАНИЕ КОМАНДЫ в переменную "team_name"
+    team_name = message.text
+    # обновляем СОСТОЯНИЕ (Team_name) данными,
+    # ключ - 'team_name', значение - НАЗВАНИЕ КОМАНДЫ
+    await state.update_data(team_name=team_name)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    # шлём польз-лю сообщение что данные сохранены, провешиваем клавиатуру 'Редактировать - Далее'
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text=f"Название команды: *{team_name}*.\nСохраняем 👌",
+                                reply_markup=keyboards.edit_data, parse_mode='Markdown')
+    await CaptainStates.Team_name_support.set()
+
+
+# хэндлер ловит кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Team_name_support)
+async def team_name_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == 'Редактировать':
+        # просит поль-ля снова ввести название команды
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Введите новое название команды')
+        await CaptainStates.Team_name.set()
+    # обработка кнопки "Далее", запрос имени (для след.состояния), пропуск в следующее состояние Capt_name
+    elif call['data'] == 'Далее':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Напишите ваше имя")
+        await CaptainStates.Capt_name.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+
+
+# ЛОВИТ имя КАПИТАНА
+@dp.message_handler(state=CaptainStates.Capt_name)
+async def captain_nik_handler(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает имя КАПИТАНА
+    # сохраняем ИМЯ КАПИТАНА в переменную 'capt_name'
+    capt_name = message.text
+    # создаём реферальный код для капитана
+    data = await state.get_data()
+    capt_telegram_id_from_fsm = data.get('capt_telegram_id')
+    capt_referral = f"https://t.me/{config.bot_nickname}?start={capt_telegram_id_from_fsm}"
+    # обновляем СОСТОЯНИЕ (Capt_name) данными,
+    # ключ - 'capt_name', значение - НИК КАПИТАНА КОМАНДЫ
+    # ключ - 'capt_referral', значение - РЕФЕРАЛЬНЫЙ КОД
+    await state.update_data(capt_name=capt_name, capt_referral=capt_referral)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    # шлём капитану сообщение, что данные сохранены, провешиваем клавиатуру 'Редактировать', 'Далее'
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text=f"Ваше имя сохранено, *{capt_name}* 😉",
+                                reply_markup=keyboards.edit_data, parse_mode='Markdown')
+    await CaptainStates.Capt_name_support.set()
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Capt_name_support)
+async def capt_name_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    # этот кусок кода срабатывает при нажатии кнопки 'Редактировать'
+    if call['data'] == 'Редактировать':
+        # запрашивает повторное введение имени
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Напишите ваше имя')
+        await CaptainStates.Capt_name.set()
+    # обработка кнопки "Далее", запрос кол-ва игроков для след.состония, перевод в след.состояние
+    elif call['data'] == 'Далее':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Укажите количество игроков. (Можно примерно).',
+                                    reply_markup=keyboards.amount_part_keyboard)
+        await CaptainStates.Amount_participants.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+
+
+# ЛОВИТ КОЛИЧЕСТВО ИГРОКОВ (ИЗ ИНЛАЙН-КНОПОК)
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Amount_participants)
+async def amount_of_team(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    # сюда попадает КОЛИЧЕСТВО ИГРОКОВ в виде callback_query
+    amount_players = int(call['data'])
+    await state.update_data(amount_players=amount_players)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    # шлём польз-лю сообщение, что данные сохранены, провешиваем клавиатуру 'Редактировать', 'Далее'
+    sent_message = await bot.send_message(chat_id, text=f"Количество игроков: *{call['data']}*. \nЗаписано 👍",
+                                          reply_markup=keyboards.edit_data, parse_mode='Markdown')
+    await state.update_data(sent_message_id=sent_message.message_id)
+    # назначаем состояние для след. хэндлера, будет ловить "Редактировать - Далее"
+    await CaptainStates.Amount_participants_new.set()
+
+
+# здесь обрабатываем нажатие кнопок РЕДАКТИРОВАТЬ или ДАЛЕЕ
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Amount_participants_new)
+async def edit_amount_or_not(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == "Редактировать":
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Укажите количество игроков. (Можно примерно)',
+                                    reply_markup=keyboards.amount_part_keyboard)
+        await CaptainStates.Amount_participants.set()
+    elif call['data'] == 'Далее':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Впишите ваш номер телефона. \nБот принимает только польские номера 🇵🇱\n"
+                                         "Начало должно быть +48 или 48")
+        await CaptainStates.Capt_phone_number.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n'
+                                         'Нажимайте кнопочки ⬇️')
+
+
+# ЛОВИТ НОМЕР ТЕЛЕФОНА КАПИТАНА
+@dp.message_handler(state=CaptainStates.Capt_phone_number)
+async def capt_phone(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает НОМЕР ТЕЛЕФОНА КАПИТАНА
+    # обрабатываем исключения, которые могут возникнуть, если вписать вместо цифр буквы
+    try:
+        # сохраняем НОМЕР ТЕЛЕФОНА (тип данных пока 'str')
+        capt_phone_number = message.text
+        # очищаем строчку с номером от "+", "(", ")" и пробелов, приводим к типу 'int'
+        capt_phone_number_int = int(
+            capt_phone_number.replace('+', '').replace(' ', '').replace('(', '').replace(')', ''))
+    # в случае возникновение исключения (были введены буквы)
+    except ValueError:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # отравляем сообщение, просим повторно ввести телефон
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверный ввод.\nПопробуйте ещё раз 🔁")
+    # когда всё внесено правильно (цифрами)
+    else:
+        # проверяем, чтобы телефон был польским, начинался с +48 или 48
+        # проверяем пер-ю "capt_phone_number", т.к. это строка
+        if capt_phone_number.startswith('+48') or capt_phone_number.startswith('48'):
+            # также польский номер без кода +48 должен содержать в себе 9 цифр
+            # проверяем это длиной строки, в кот-ю мы превратили наш номер без +() и пробелов и из кот-й удалили 48
+            if len(str(capt_phone_number_int).replace('48', '')) == 9:
+                # записываем телефон в состояние по ключу "capt_phone_number", в виде строки, без пробелов
+                await state.update_data(capt_phone_number=capt_phone_number.replace(' ', ''))
+                await bot.delete_message(chat_id=chat_id, message_id=message_id)
+                # пишем польз-лю, что данные сохранены, открываем клавиатуру 'Редактировать', 'Далее'
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text=f"Номер телефона {capt_phone_number} сохранён 🥳",
+                                            reply_markup=keyboards.edit_data)
+                await CaptainStates.Capt_phone_number_support.set()
+            # если в номере больше 9 цифр
+            elif len(str(capt_phone_number_int).replace('48', '')) > 9:
+                await bot.delete_message(chat_id=chat_id, message_id=message_id)
+                # пишем об этом польз-лю
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text="В вашем номере больше 9 цифр, попробуйте внимательнее")
+            # если в номере меньше 9 цифр
+            elif len(str(capt_phone_number_int).replace('48', '')) < 9:
+                await bot.delete_message(chat_id=chat_id, message_id=message_id)
+                # пишем об этом польз-лю
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text="В вашем номере меньше 9 цифр, попробуйте внимательнее")
+        # если телефон не начинается с +48 или 48, то он явно не польский
+        else:
+            await bot.delete_message(chat_id=chat_id, message_id=message_id)
+            # запрашиваем повторный ввод
+            await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                        text="Введите польский номер 🇵🇱\n(начинается с +48 или 48) 😊")
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Capt_phone_number_support)
+async def capt_phone_number_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == 'Редактировать':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Введите номер телефона ещё раз 🔁\n'
+                                         'Бот принимает только польские номера 🇵🇱\n'
+                                         'Начало должно быть +48 или 48')
+        await CaptainStates.Capt_phone_number.set()
+    # обработка кнопки "Далее", запрос соц.сети (для след.состояния), пропуск в следующее состояние
+    elif call['data'] == 'Далее':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться.",
+                                    reply_markup=keyboards.soc_network)
+        await CaptainStates.Choose_soc_net.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер-"маршрутизатор", ловит нажатие кнопок "Telegram", "Instagram", "Facebook"
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Choose_soc_net)
+async def capt_soc_net(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    # при нажатии кнопки пишем сообщение, переводим в следующий стейт
+    if call['data'] == "Telegram":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш аккаунт Telegram")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Telegram.set()
+    elif call['data'] == "Instagram":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш Instagram аккаунт")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Instagram.set()
+    elif call['data'] == "Facebook":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш Facebook аккаунт")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Facebook.set()
+    elif call['data'] == "Другое":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Other_soc_net.set()
+    else:
+        sent_message = await bot.send_message(chat_id, text='Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n'
+                                                            'Нажимайте кнопочки ⬇️')
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+# хэндлер для введения ссылки на телеграм
+@dp.message_handler(state=CaptainStates.Telegram)
+async def capt_link_telegram(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает ССЫЛКА НА ТЕЛЕГРАМ КАПИТАНА
+    # проверка, чтобы ссылка на телегу начиналась с https://t.me/ или @ не была пустая
+    if (message.text.startswith('https://t.me/') and len(message.text[13:]) != 0) or (
+            message.text.startswith("@") and len(message.text[1:]) != 0):
+        # сохраняем ссылку
+        cap_link_telegram = message.text
+        # записываем её в пространство имён состояния под ключом "capt_link"
+        await state.update_data(capt_link=cap_link_telegram)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем сообщение о сохранении данных, открываем клавиатуру для редактир-я или перехода дальше
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка сохранена ✅",
+                                    reply_markup=keyboards.edit_data)
+        await CaptainStates.Link_support.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер для введения ссылки на инстаграм
+@dp.message_handler(state=CaptainStates.Instagram)
+async def capt_link_instagram(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает ССЫЛКА НА ИНСТАГРАМ КАПИТАНА
+    # проверка, чтобы ссылка на инсту начиналась с чего надо и не была пустая
+    if (message.text.startswith('https://www.instagram.com/') and len(message.text[26:]) != 0) or \
+            (message.text.startswith('https://instagram.com/') and len(message.text[22:]) != 0):
+        # сохраняем ссылку
+        capt_link_inst = message.text
+        # записываем её в пространство имён состояния под ключом "capt_link"
+        await state.update_data(capt_link=capt_link_inst)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем, что всё сохранено, открываем клавиатуру для редактир-я или перехода дальше
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка на Instagram сохранена ✅",
+                                    reply_markup=keyboards.edit_data)
+        await CaptainStates.Link_support.set()
+    # если ссылка начинается иначе
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # просим ещё раз написать
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер для введения ссылки на фэйсбук
+@dp.message_handler(state=CaptainStates.Facebook)
+async def capt_link_facebook(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает ССЫЛКА НА ФЭЙСБУК КАПИТАНА
+    # проверка, чтобы ссылка на фэйсбук начиналась с https://www.facebook.com/ и не была пустая
+    if message.text.startswith('https://www.facebook.com/') and len(message.text[25:]) != 0:
+        # сохраняем ссылку
+        capt_link_fcbk = message.text
+        # записываем её в пространство имён состояния под ключом "capt_link"
+        await state.update_data(capt_link=capt_link_fcbk)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем сообщение, открываем клавиатуру для редактир-я или перехода дальше
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка на Facebook сохранена ✅",
+                                    reply_markup=keyboards.edit_data)
+        await CaptainStates.Link_support.set()
+    # если ссылка начинается иначе
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # просим ещё раз написать
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер для ловли ссылки на другую соц.сеть
+@dp.message_handler(state=CaptainStates.Other_soc_net)
+async def capt_link_other_soc_net(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    capt_link_other = message.text
+    await state.update_data(capt_link=capt_link_other)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка сохранена ✅",
+                                reply_markup=keyboards.edit_data)
+    await CaptainStates.Link_support.set()
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Link_support)
+async def capt_link_telegram_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == 'Редактировать':
+        # возвращаем юзера в предыдущий стейт, где он выбирал соц.сеть
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться",
+                                    reply_markup=keyboards.soc_network)
+        await CaptainStates.Choose_soc_net.set()
+    # если нажата кнопка 'Далее'
+    elif call['data'] == 'Далее':
+        # задаём вопрос для след.стейта
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Готовы ли вы принять в вашу команду игрока/ов? 👤",
+                                    reply_markup=keyboards.yes_or_no)
+        # переводим в следующий стейт
+        await CaptainStates.Lonely_player.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер ловит нажание кнопок ДА или НЕТ после вопроса об одиноких игроках
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Lonely_player)
+async def capt_agree_lonely_player(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    # при нажатии кнопки "Да"
+    if call['data'] == 'Да':
+        # записываем согласие в переменную в виде булевого значения "True"
+        capt_agree = True
+        # записываем это в пространство имён состояния
+        await state.update_data(capt_agree=capt_agree)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # шлём сообщение, выставляем клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
+        sent_message = await bot.send_message(chat_id, text="Так и запишем!", reply_markup=keyboards.edit_data)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        # присваиваем следующий стейт (будет отлавливать кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ)
+        await CaptainStates.Lonely_player_support.set()
+    # при нажатии кнопки "Нет"
+    elif call['data'] == 'Нет':
+        # записываем несогласие в переменную в виде булевого значения "False"
+        capt_agree = False
+        # записываем это в пространство имён состояния
+        await state.update_data(capt_agree=capt_agree)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # шлём сообщение, выставляем клавиатуру РЕДАКТИРОВАТЬ - ДАЛЕЕ
+        sent_message = await bot.send_message(chat_id, text="Так и запишем!", reply_markup=keyboards.edit_data)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        # присваиваем следующий стейт (будет отлавливать кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ)
+        await CaptainStates.Lonely_player_support.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+# хэндлер ловит кнопки РЕДАКТИРОВАТЬ - ДАЛЕЕ (после сохранения ответа о согласии)
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Lonely_player_support)
+async def capt_agree_lonely_player_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    # при нажатии кнопки "Редактировать"
+    if call['data'] == 'Редактировать':
+        # снова задаём вопрос
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Готовы ли вы принять в вашу команду игрока/ов? 👤 ',
+                                    reply_markup=keyboards.yes_or_no)
+        # возвращаем поль-ля в предыдущее состояние
+        await CaptainStates.Lonely_player.set()
+    # если нажата кнопка "Далее"
+    elif call['data'] == 'Далее':
+        # задаём вопрос для следующего состояния, вывешиваем клавиатуру ДА или НЕТ
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Есть ли у вас комментарии? 📝',
+                                    reply_markup=keyboards.yes_or_no)
+        # присваиваем следующее состояние
+        await CaptainStates.Capt_comments.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
+
+
 # # хэндлер ловит нажатие кнопок ДА или НЕТ после вопроса 'Есть ли у вас комментарии?'
 # @dp.message_handler(state=CaptainStates.Capt_comments)
 # async def capt_comment_handler(message: types.Message, state: FSMContext):
@@ -1391,17 +1491,17 @@ async def cap_second_reg_show_new_data(call: types.CallbackQuery, state: FSMCont
     chat_id = call.message.chat.id
     await bot.delete_message(chat_id=chat_id, message_id=sent_message_id)
     if call['data'] == "Ок":
-        data = await state.get_data()
-        game_date_user_style_from_fsm = data.get('game_date')
-        week_day_from_fsm = data.get('week_day')
-        game_time_from_fsm = data.get('game_time')
-        team_name_from_fsm = data.get('team_name')
-        capt_name_from_fsm = data.get('capt_name')
-        amount_players_from_fsm = data.get('amount_players')
-        capt_phone_number_from_fsm = data.get('capt_phone_number')
-        capt_link_from_fsm = data.get('capt_link')
-        capt_agree_from_fsm = str(data.get('capt_agree'))
-        capt_comment_from_fsm = data.get('capt_comment')
+        async with state.proxy() as data:
+            game_date_user_style_from_fsm = data['game_date']
+            week_day_from_fsm = data['week_day']
+            game_time_from_fsm = data['game_time']
+            team_name_from_fsm = data['team_name']
+            capt_name_from_fsm = data['capt_name']
+            amount_players_from_fsm = data['amount_players']
+            capt_phone_number_from_fsm = data['capt_phone_number']
+            capt_link_from_fsm = data['capt_link']
+            capt_agree_from_fsm = str(data['capt_agree'])
+            capt_comment_from_fsm = data['capt_comment']
         # капитан СОГЛАСЕН НА ОДИНОКОГО ИГРОКА
         if capt_agree_from_fsm is True or capt_agree_from_fsm == 'True':
             # у капитана НЕТ КОММЕНТАРИЕВ
@@ -1483,24 +1583,25 @@ async def cap_second_reg_complete_new_registr(call: types.CallbackQuery, state: 
     chat_id = call.message.chat.id
     if call['data'] == "Завершить регистрацию":
         # вытягиваем из fsm всё, что там есть
-        data = await state.get_data()
-        game_date_user_style_from_fsm = data.get('game_date')
-        n_day = game_date_user_style_from_fsm[0:2]
-        n_month = game_date_user_style_from_fsm[3:5]
-        n_year = game_date_user_style_from_fsm[6:10]
-        game_date_db_style = f"{n_year}{n_month}{n_day}"
-        week_day_from_fsm = data.get('week_day')
-        game_time_from_fsm = data.get('game_time')
-        team_name_from_fsm = data.get('team_name')
-        capt_telegram_id_from_fsm = data.get('capt_telegram_id')
-        capt_name_from_fsm = data.get('capt_name')
-        capt_referral_from_fsm = data.get('capt_referral')
-        amount_players_from_fsm = data.get('amount_players')
-        capt_phone_number_from_fsm = data.get('capt_phone_number')
-        capt_link_from_fsm = data.get('capt_link')
-        capt_agree_from_fsm = str(data.get('capt_agree'))
-        capt_comment_from_fsm = data.get('capt_comment')
-        capt_tel_id_game_date_from_fsm = (str(data.get('capt_telegram_id')) + game_date_db_style)
+        async with state.proxy() as data:
+            sent_message_id = data['sent_message_id']
+            game_date_user_style_from_fsm = data['game_date']
+            n_day = game_date_user_style_from_fsm[0:2]
+            n_month = game_date_user_style_from_fsm[3:5]
+            n_year = game_date_user_style_from_fsm[6:10]
+            game_date_db_style = f"{n_year}{n_month}{n_day}"
+            week_day_from_fsm = data['week_day']
+            game_time_from_fsm = data['game_time']
+            team_name_from_fsm = data['team_name']
+            capt_telegram_id_from_fsm = data['capt_telegram_id']
+            capt_name_from_fsm = data['capt_name']
+            capt_referral_from_fsm = data['capt_referral']
+            amount_players_from_fsm = data['amount_players']
+            capt_phone_number_from_fsm = data['capt_phone_number']
+            capt_link_from_fsm = data['capt_link']
+            capt_agree_from_fsm = str(data['capt_agree'])
+            capt_comment_from_fsm = data['capt_comment']
+            capt_tel_id_game_date_from_fsm = (str(data['capt_telegram_id']) + game_date_db_style)
         # в таком виде передаём в базу для записи
         date_string_for_db = f"{n_year}-{n_month}-{n_day} {game_time_from_fsm}:00"
         # записываем в базу
@@ -1666,187 +1767,287 @@ async def catch_cap_name_second_reg(message: types.Message, state: FSMContext):
     await CaptainStates.New_data_show.set()
 
 
-# @dp.message_handler(Command('amount_players'), state=CaptainStates.Finish_edit_second_registration)
-# async def cap_edit_amount_players_second_reg(message: types.Message):
-#     await bot.send_message(message.chat.id, text='Укажите количество игроков. (Можно примерно)',
-#                            reply_markup=keyboards.amount_part_keyboard)
-#     await CaptainStates.Edit_amount_participants_second.set()
-#
-#
-# @dp.callback_query_handler(text_contains='', state=CaptainStates.Edit_amount_participants_second)
-# async def catch_cap_amount_players_second_reg(call: types.CallbackQuery, state: FSMContext):
-#     amount_players = int(call['data'])
-#     await state.update_data(amount_players=amount_players)
-#     await bot.send_message(call.message.chat.id, text=f"Количество игроков: *{amount_players}*. \nЗаписано 👍",
-#                            reply_markup=keyboards.ok_keyboard, parse_mode='Markdown')
-#     await CaptainStates.New_data_show.set()
-#
-#
-# @dp.message_handler(Command('capt_phone'), state=CaptainStates.Finish_edit_second_registration)
-# async def cap_edit_phone_number_second_reg(message: types.Message):
-#     await bot.send_message(message.chat.id,
-#                            text="Впишите ваш номер телефона. \nБот принимает только польские номера 🇵🇱\n"
-#                                 "Начало должно быть +48 или 48", reply_markup=keyboards.ReplyKeyboardRemove())
-#     await CaptainStates.Edit_capt_phone_second.set()
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_phone_second)
-# async def catch_capt_phone_number_second_reg(message: types.Message, state: FSMContext):
-#     try:
-#         new_capt_phone = message.text
-#         new_capt_phone_int = int(
-#             new_capt_phone.replace('+', '').replace(' ', '').replace('(', '').replace(')', ''))
-#     except ValueError:
-#         await message.answer('Неверный ввод.\nПопробуйте ещё раз 🔁"', reply_markup=types.ReplyKeyboardRemove())
-#     else:
-#         if new_capt_phone.startswith('+48') or new_capt_phone.startswith('48'):
-#             if len(str(new_capt_phone_int).replace('48', '')) == 9:
-#                 await state.update_data(capt_phone_number=new_capt_phone.replace(' ', ''))
-#                 await bot.send_message(message.chat.id, text=f"Номер телефона {new_capt_phone} сохранён 🥳",
-#                                        reply_markup=keyboards.ok_keyboard)
-#                 await CaptainStates.New_data_show.set()
-#             elif len(str(new_capt_phone_int).replace('48', '')) > 9:
-#                 await message.answer(text="В вашем номере больше 9 цифр, попробуйте внимательнее",
-#                                      reply_markup=types.ReplyKeyboardRemove())
-#             elif len(str(new_capt_phone_int).replace('48', '')) < 9:
-#                 await message.answer(text="В вашем номере меньше 9 цифр, попробуйте внимательнее",
-#                                      reply_markup=types.ReplyKeyboardRemove())
-#         else:
-#             await message.answer(text="Введите польский номер 🇵🇱\n(начинается с +48 или 48) 😊",
-#                                  reply_markup=types.ReplyKeyboardRemove())
-#
-#
-# @dp.message_handler(Command('capt_link'), state=CaptainStates.Finish_edit_second_registration)
-# async def cap_edit_link_second_reg(message: types.Message):
-#     await bot.send_message(message.chat.id, text='Выберите соц.сеть/мессенджер, по которой с вами можно связаться.',
-#                            reply_markup=keyboards.soc_network)
-#     await CaptainStates.Edit_capt_link_second.set()
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_second)
-# async def catch_cap_link_second_reg(message: types.Message):
-#     if message.text == "Telegram":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш аккаунт Telegram",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Edit_capt_link_telegram_second.set()
-#     elif message.text == "Instagram":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш Instagram аккаунт",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Edit_capt_link_instagram_second.set()
-#     elif message.text == "Facebook":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш Facebook аккаунт",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Edit_capt_link_facebook_second.set()
-#     elif message.text == "Другое":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку", reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Edit_capt_link_other_soc_net_second.set()
-#     else:
-#         await message.answer('Ошибка. Попробуйте ещё раз 🔁')
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_telegram_second)
-# async def catch_cap_link_telegram_second_reg(message: types.Message, state: FSMContext):
-#     if (message.text.startswith('https://t.me/') and len(message.text[13:]) != 0) or (
-#             message.text.startswith("@") and len(message.text[1:]) != 0):
-#         new_link_tel = message.text
-#         await state.update_data(capt_link=new_link_tel)
-#         await bot.send_message(message.chat.id, text='Ссылка сохранена ✅', reply_markup=keyboards.ok_keyboard)
-#         await CaptainStates.New_data_show.set()
-#     else:
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁", reply_markup=types.ReplyKeyboardRemove())
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_instagram_second)
-# async def catch_cap_link_instagram_second_reg(message: types.Message, state: FSMContext):
-#     if (message.text.startswith('https://www.instagram.com/') and len(message.text[26:]) != 0) or \
-#             (message.text.startswith('https://instagram.com/') and len(message.text[22:]) != 0):
-#         new_link_inst = message.text
-#         await state.update_data(capt_link=new_link_inst)
-#         await bot.send_message(message.chat.id, text='Ссылка на Instagram сохранена ✅',
-#                                reply_markup=keyboards.ok_keyboard)
-#         await CaptainStates.New_data_show.set()
-#     else:
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁", reply_markup=types.ReplyKeyboardRemove())
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_facebook_second)
-# async def catch_cap_link_facebook_second_reg(message: types.Message, state: FSMContext):
-#     if message.text.startswith('https://www.facebook.com/') and len(message.text[25:]) != 0:
-#         new_link_facb = message.text
-#         await state.update_data(capt_link=new_link_facb)
-#         await bot.send_message(message.chat.id, text='Ссылка на Facebook сохранена ✅',
-#                                reply_markup=keyboards.ok_keyboard)
-#         await CaptainStates.New_data_show.set()
-#     else:
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁", reply_markup=types.ReplyKeyboardRemove())
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_other_soc_net_second)
-# async def catch_cap_link_other_soc_net_second_reg(message: types.Message, state: FSMContext):
-#     new_link_other_soc_net = message.text
-#     await state.update_data(capt_link=new_link_other_soc_net)
-#     await bot.send_message(message.chat.id, "Ссылка сохранена ✅", reply_markup=keyboards.ok_keyboard)
-#     await CaptainStates.New_data_show.set()
-#
-#
-# @dp.message_handler(Command('lonely_player'), state=CaptainStates.Finish_edit_second_registration)
-# async def cap_edit_lonely_player_agree_second_reg(message: types.Message):
-#     await bot.send_message(message.chat.id, text='Готовы ли вы принять в вашу команду игрока/ов? 👤 ',
-#                            reply_markup=keyboards.yes_or_no)
-#     await CaptainStates.Edit_lonely_player_second.set()
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_lonely_player_second)
-# async def catch_cap_lonely_player_agree_second_reg(message: types.Message, state: FSMContext):
-#     if message.text == 'Да':
-#         new_capt_agree = True
-#         await state.update_data(capt_agree=new_capt_agree)
-#         await bot.send_message(message.chat.id, "Так и запишем!", reply_markup=keyboards.ok_keyboard)
-#         await CaptainStates.New_data_show.set()
-#     elif message.text == 'Нет':
-#         new_capt_agree = False
-#         await state.update_data(capt_agree=new_capt_agree)
-#         await bot.send_message(message.chat.id, "Так и запишем!", reply_markup=keyboards.ok_keyboard)
-#         await CaptainStates.New_data_show.set()
-#     else:
-#         await message.answer("Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# @dp.message_handler(Command('capt_comment'), state=CaptainStates.Finish_edit_second_registration)
-# async def cap_edit_comment_second_reg(message: types.Message):
-#     await bot.send_message(message.chat.id, text='Есть ли у вас комментарии? 📝',
-#                            reply_markup=keyboards.yes_or_no)
-#     await CaptainStates.Edit_capt_comment_second.set()
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_comment_second)
-# async def catch_cap_comment_second_reg(message: types.Message, state: FSMContext):
-#     if message.text == 'Да':
-#         await bot.send_message(message.chat.id, "Внесите ваш комментарий ✏️",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await CaptainStates.Edit_capt_comment_enter_second.set()
-#     elif message.text == 'Нет':
-#         await state.update_data(capt_comment='')
-#         await bot.send_message(message.chat.id, "Сохранили!", reply_markup=keyboards.ok_keyboard)
-#         await CaptainStates.New_data_show.set()
-#     else:
-#         await message.answer("Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# @dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_comment_enter_second)
-# async def catch_cap_comment_enter_second_reg(message: types.Message, state: FSMContext):
-#     new_comment = message.text
-#     await state.update_data(capt_comment=new_comment)
-#     await bot.send_message(message.chat.id, "Записали 👍", reply_markup=keyboards.ok_keyboard)
-#     await CaptainStates.New_data_show.set()
-#
-#
-# """
-#
-# -------------------------------------->>>> ОКОНЧАНИЕ РЕГИСТРАЦИИ КАПИТАНА <<<<------------------------------------------
-#
-# """
-#
+@dp.message_handler(Command('amount_players'), state=CaptainStates.Finish_edit_second_registration)
+async def cap_edit_amount_players_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text='Укажите количество игроков. (Можно примерно)',
+                                reply_markup=keyboards.amount_part_keyboard)
+    await CaptainStates.Edit_amount_participants_second.set()
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Edit_amount_participants_second)
+async def catch_cap_amount_players_second_reg(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    amount_players = int(call['data'])
+    await state.update_data(amount_players=amount_players)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    sent_message = await bot.send_message(chat_id, text=f"Количество игроков: *{amount_players}*. \nЗаписано 👍",
+                                          reply_markup=keyboards.ok_keyboard, parse_mode='Markdown')
+    await state.update_data(sent_message_id=sent_message.message_id)
+    await CaptainStates.New_data_show.set()
+
+
+@dp.message_handler(Command('capt_phone'), state=CaptainStates.Finish_edit_second_registration)
+async def cap_edit_phone_number_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text="Впишите ваш номер телефона. \nБот принимает только польские номера 🇵🇱\n"
+                                     "Начало должно быть +48 или 48")
+    await CaptainStates.Edit_capt_phone_second.set()
+
+
+@dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_phone_second)
+async def catch_capt_phone_number_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    try:
+        new_capt_phone = message.text
+        new_capt_phone_int = int(
+            new_capt_phone.replace('+', '').replace(' ', '').replace('(', '').replace(')', ''))
+    except ValueError:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Неверный ввод.\nПопробуйте ещё раз 🔁')
+    else:
+        if new_capt_phone.startswith('+48') or new_capt_phone.startswith('48'):
+            if len(str(new_capt_phone_int).replace('48', '')) == 9:
+                await state.update_data(capt_phone_number=new_capt_phone.replace(' ', ''))
+                await bot.delete_message(chat_id=chat_id, message_id=message_id)
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text=f"Номер телефона {new_capt_phone} сохранён 🥳",
+                                            reply_markup=keyboards.ok_keyboard)
+                await CaptainStates.New_data_show.set()
+            elif len(str(new_capt_phone_int).replace('48', '')) > 9:
+                await bot.delete_message(chat_id=chat_id, message_id=message_id)
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text="В вашем номере больше 9 цифр, попробуйте внимательнее")
+            elif len(str(new_capt_phone_int).replace('48', '')) < 9:
+                await bot.delete_message(chat_id=chat_id, message_id=message_id)
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text="В вашем номере меньше 9 цифр, попробуйте внимательнее")
+        else:
+            await bot.delete_message(chat_id=chat_id, message_id=message_id)
+            await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                        text="Введите польский номер 🇵🇱\n(начинается с +48 или 48) 😊")
+
+
+@dp.message_handler(Command('capt_link'), state=CaptainStates.Finish_edit_second_registration)
+async def cap_edit_link_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text='Выберите соц.сеть/мессенджер, по которой с вами можно связаться.',
+                                reply_markup=keyboards.soc_network)
+    await CaptainStates.Edit_capt_link_second.set()
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Edit_capt_link_second)
+async def catch_cap_link_second_reg(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    if call['data'] == "Telegram":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш аккаунт Telegram")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Edit_capt_link_telegram_second.set()
+    elif call['data'] == "Instagram":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш Instagram аккаунт")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Edit_capt_link_instagram_second.set()
+    elif call['data'] == "Facebook":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш Facebook аккаунт")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Edit_capt_link_facebook_second.set()
+    elif call['data'] == "Другое":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Edit_capt_link_other_soc_net_second.set()
+    else:
+        sent_message = await bot.send_message(chat_id, text='Ошибка. Попробуйте ещё раз 🔁')
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+@dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_telegram_second)
+async def catch_cap_link_telegram_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    if (message.text.startswith('https://t.me/') and len(message.text[13:]) != 0) or (
+            message.text.startswith("@") and len(message.text[1:]) != 0):
+        new_link_tel = message.text
+        await state.update_data(capt_link=new_link_tel)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Ссылка сохранена ✅',
+                                    reply_markup=keyboards.ok_keyboard)
+        await CaptainStates.New_data_show.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+@dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_instagram_second)
+async def catch_cap_link_instagram_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    if (message.text.startswith('https://www.instagram.com/') and len(message.text[26:]) != 0) or \
+            (message.text.startswith('https://instagram.com/') and len(message.text[22:]) != 0):
+        new_link_inst = message.text
+        await state.update_data(capt_link=new_link_inst)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Ссылка на Instagram сохранена ✅',
+                                    reply_markup=keyboards.ok_keyboard)
+        await CaptainStates.New_data_show.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+@dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_facebook_second)
+async def catch_cap_link_facebook_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    if message.text.startswith('https://www.facebook.com/') and len(message.text[25:]) != 0:
+        new_link_facb = message.text
+        await state.update_data(capt_link=new_link_facb)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Ссылка на Facebook сохранена ✅',
+                                    reply_markup=keyboards.ok_keyboard)
+        await CaptainStates.New_data_show.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+@dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_link_other_soc_net_second)
+async def catch_cap_link_other_soc_net_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    new_link_other_soc_net = message.text
+    await state.update_data(capt_link=new_link_other_soc_net)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка сохранена ✅",
+                                reply_markup=keyboards.ok_keyboard)
+    await CaptainStates.New_data_show.set()
+
+
+@dp.message_handler(Command('lonely_player'), state=CaptainStates.Finish_edit_second_registration)
+async def cap_edit_lonely_player_agree_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text='Готовы ли вы принять в вашу команду игрока/ов? 👤 ',
+                                reply_markup=keyboards.yes_or_no)
+    await CaptainStates.Edit_lonely_player_second.set()
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Edit_lonely_player_second)
+async def catch_cap_lonely_player_agree_second_reg(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    if call['data'] == 'Да':
+        new_capt_agree = True
+        await state.update_data(capt_agree=new_capt_agree)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Так и запишем!", reply_markup=keyboards.ok_keyboard)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.New_data_show.set()
+    elif call['data'] == 'Нет':
+        new_capt_agree = False
+        await state.update_data(capt_agree=new_capt_agree)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Так и запишем!", reply_markup=keyboards.ok_keyboard)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.New_data_show.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+@dp.message_handler(Command('capt_comment'), state=CaptainStates.Finish_edit_second_registration)
+async def cap_edit_comment_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Есть ли у вас комментарии? 📝',
+                                reply_markup=keyboards.yes_or_no)
+    await CaptainStates.Edit_capt_comment_second.set()
+
+
+@dp.callback_query_handler(text_contains='', state=CaptainStates.Edit_capt_comment_second)
+async def catch_cap_comment_second_reg(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    if call['data'] == 'Да':
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ваш комментарий ✏️")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.Edit_capt_comment_enter_second.set()
+    elif call['data'] == 'Нет':
+        await state.update_data(capt_comment='')
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Сохранили!", reply_markup=keyboards.ok_keyboard)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await CaptainStates.New_data_show.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+@dp.message_handler(content_types='text', state=CaptainStates.Edit_capt_comment_enter_second)
+async def catch_cap_comment_enter_second_reg(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    new_comment = message.text
+    await state.update_data(capt_comment=new_comment)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Записали 👍",
+                                reply_markup=keyboards.ok_keyboard)
+    await CaptainStates.New_data_show.set()
+
+
+"""
+
+-------------------------------------->>>> ОКОНЧАНИЕ РЕГИСТРАЦИИ КАПИТАНА <<<<------------------------------------------
+
+"""
+
 # """
 #
 # ---------------------------------->>>> НАЧАЛО РЕГИСТРАЦИИ УЧАСТНИКА КОМАНДЫ <<<<----------------------------------------
