@@ -76,8 +76,11 @@ ok_key = InlineKeyboardButton("Ок", callback_data="Ок")
 ok_keyboard.add(ok_key)
 
 # клавиатура с кнопкой "Всё верно"
-this_is_right_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-this_is_right_key = types.KeyboardButton("Всё верно")
+# this_is_right_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+# this_is_right_key = types.KeyboardButton("Всё верно")
+# this_is_right_keyboard.add(this_is_right_key)
+this_is_right_keyboard = types.InlineKeyboardMarkup(row_width=1)
+this_is_right_key = types.InlineKeyboardButton("Всё верно", callback_data="Всё верно")
 this_is_right_keyboard.add(this_is_right_key)
 
 # клавиатура с цифрами от 1 до 10 для выбора кол-ва участников в команде
