@@ -64,7 +64,7 @@ def all_dates_captain_registered_is_except_past(tel_id):
 
     query = "SELECT STRFTIME('%d.%m.%Y', GameDate) " \
             "FROM captains " \
-            "WHERE CaptTelegramId = (?) AND GameDate > STRFTIME('%Y-%m-%d', 'now', '-1 days') " \
+            "WHERE CaptTelegramId = (?) AND GameDate > STRFTIME('%Y-%m-%d', 'now') " \
             "ORDER BY GameDate"
     cursor.execute(query, (tel_id,))
     all_dates = list(cursor.fetchall())

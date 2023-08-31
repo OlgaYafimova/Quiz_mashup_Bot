@@ -90,31 +90,31 @@ class PlayersStates(StatesGroup):
     Players_comments_support = State()  # callback
     Players_comments_support_enter = State()  # message
     Show_all_info_to_player = State()  # callback
-    Finish_player_edit = State()
-    Player_edit_game_date = State()
-    Player_edit_name = State()
-    Player_edit_comments = State()
-    Player_edit_comment_enter = State()
+    Finish_player_edit = State()  # message
+    Player_edit_game_date = State()  # callback
+    Player_edit_name = State()  # message
+    Player_edit_comments = State()  # callback
+    Player_edit_comment_enter = State()  # message
 
 
 class LonelyPlayerStates(StatesGroup):
-    Lonely_player_name = State()
-    Lonely_player_name_support = State()
-    Lonely_player_comment = State()
-    Lonely_player_comment_support = State()
-    Lonely_player_comment_support_enter = State()
-    Show_info_to_lonely_player = State()
+    Lonely_player_name = State()  # message
+    Lonely_player_name_support = State()  # callback
+    Lonely_player_comment = State()  # callback
+    Lonely_player_comment_support = State()  # callback
+    Lonely_player_comment_support_enter = State()  # message
+    Show_info_to_lonely_player = State()  # callback
     Finish_lonely_player_edit = State()
     Lonely_player_edit_game_date = State()
     Lonely_player_edit_name = State()
     Lonely_player_edit_comments = State()
     Lonely_player_edit_comment_enter = State()
-    Lonely_player_Choose_soc_net = State()
-    Lonely_player_Telegram = State()
-    Lonely_player_Instagram = State()
-    Lonely_player_Facebook = State()
-    Lonely_player_Other_soc_net = State()
-    Lonely_player_link_support = State()
+    Lonely_player_Choose_soc_net = State()  # callback
+    Lonely_player_Telegram = State()  # message
+    Lonely_player_Instagram = State()  # message
+    Lonely_player_Facebook = State()  # message
+    Lonely_player_Other_soc_net = State()  # message
+    Lonely_player_link_support = State()  # callback
     Edit_lonely_player_link = State()
     Edit_lonely_player_link_telegram = State()
     Edit_lonely_player_link_instagram = State()
@@ -226,7 +226,7 @@ async def welcome(message: types.Message, state: FSMContext):
         # удаляем сообщение от ПОЛЬЗОВАТЕЛЯ
         await bot.delete_message(chat_id=chat_id, message_id=message_id)
         sent_message = await bot.send_message(message.chat.id,
-                                              text=f"Привет, {message.from_user.first_name}!\n"
+                                              text=f"Привет, *{message.from_user.first_name}*!\n"
                                                    f"Выберите дату игры",
                                               reply_markup=keyboards.game_dates_buttons, parse_mode='Markdown')
         await state.update_data(sent_message_id=sent_message.message_id)
@@ -274,7 +274,7 @@ async def catch_date_from_cap_or_lonely(call: types.CallbackQuery, state: FSMCon
         # шлём сообщение для перехода в след.состояние
         await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
                                     text="Хотите зарегистрироваться как капитан команды или как одиночный участник?",
-                                    reply_markup=keyboards.who_you_are, parse_mode='Markdown')
+                                    reply_markup=keyboards.who_you_are)
         await CaptainStates.Cap_or_Lonely.set()
     else:
         await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
@@ -334,8 +334,7 @@ async def captain_or_participant(call: types.CallbackQuery, state: FSMContext):
                     else:
                         await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
                                                     text='Вы капитан! Придумайте название для своей команды. '
-                                                         'Придерживаемся приличия. 😉',
-                                                    parse_mode='Markdown')
+                                                         'Придерживаемся приличия. 😉')
                         await CaptainStates.Team_name.set()
                 # если длина 'team_name' != 0, то на эту дату капитан уже зарегистрирован
                 else:
@@ -1512,8 +1511,7 @@ async def cap_second_reg_new_or_old_data(call: types.CallbackQuery, state: FSMCo
     elif call['data'] == 'Новые данные':
         await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
                                     text='Придумайте название для своей команды.'
-                                         'Придерживаемся приличия. 😉',
-                                    parse_mode='Markdown')
+                                         'Придерживаемся приличия. 😉')
         await CaptainStates.Team_name.set()
     else:
         await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
@@ -2556,388 +2554,508 @@ async def show_all_info_to_player(call: types.CallbackQuery, state: FSMContext):
                                     text='Что-то не так. Попробуйте ещё раз 🔁')
 
 
-# """
-#
-# ------------------------------------->>>> БЛОК КОМАНД ДЛЯ РЕДАКТИРОВАНИЯ ДАННЫХ <<<<------------------------------------
-# ------------------------------------------->>>> ДЛЯ УЧАСТНИКА КОМАНДЫ <<<<----------------------------------------------
-# """
-#
-#
-# @dp.message_handler(Command('game_date'), state=PlayersStates.Finish_player_edit)
-# async def player_edit_game_date(message: types.Message, state: FSMContext):
-#     data = await state.get_data()
-#     referrer_id = data.get('referrer_id')
-#     dates = sql_commands.all_dates_captain_registered_is_except_past(referrer_id)
-#     if len(dates) == 1:
-#         await bot.send_message(message.chat.id,
-#                                text='Капитан зарегистрирован только на 1 игру. Вы не можете поменять дату игры.',
-#                                reply_markup=keyboards.ok_keyboard)
-#         await PlayersStates.Show_all_info_to_player.set()
-#     elif len(dates) > 1:
-#         dates_captain_registered_is = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True,
-#                                                                 row_width=1)
-#         all_dates = sql_commands.all_dates_captain_registered_is_except_past(referrer_id)
-#         list_of_buttons_with_dates = []
-#         for one_date in all_dates:
-#             one_button_date = types.KeyboardButton(f"{one_date}")
-#             list_of_buttons_with_dates.append(one_button_date)
-#
-#         for date_button in list_of_buttons_with_dates:
-#             dates_captain_registered_is.insert(date_button)
-#         # пишем игроку сообщение, открываем клавиатуру с этими датами для выбора
-#         await bot.send_message(message.chat.id, text=f'Даты, на которые зарегистрирован ваш капитан ⬇️\n'
-#                                                      f'Выберите, когда хотите играть',
-#                                reply_markup=dates_captain_registered_is)
-#         # это состояние будет отлавливать нажатие клавиш с датами и сохранять дату в FSM
-#         await PlayersStates.Player_edit_game_date.set()
-#     else:
-#         await bot.send_message(message.chat.id,
-#                                text='Произошла какая-то ошибка. \nКапитан, по чьей ссылке вы перешли, '
-#                                     'не зарегистрирован ни на одну игру.', reply_markup=keyboards.ok_keyboard)
-#         await PlayersStates.Have_a_nice_day.set()
-#
-#
-# @dp.message_handler(content_types='text', state=PlayersStates.Player_edit_game_date)
-# async def catch_new_player_date(message: types.Message, state: FSMContext):
-#     new_game_date_user_style = message.text
-#     day = new_game_date_user_style[0:2]
-#     month = new_game_date_user_style[3:5]
-#     year = new_game_date_user_style[6:10]
-#     game_date_db_style = f"{year}{month}{day}"
-#     data = await state.get_data()
-#     capt_id = data.get('referrer_id')
-#     player_id = data.get('player_id')
-#     # проверяем чтобы сообщение, которое прилетело в этот хэндлер, если его очистить от ".", содержало цифры
-#     if new_game_date_user_style.replace('.', '').isdigit():
-#         dates = sql_commands.all_dates_captain_registered_is_except_past(capt_id)
-#         # проверяем, чтобы на выбранную дату капитан действительно был зарегистрирован
-#         if new_game_date_user_style in dates:
-#             info = sql_commands.select_teamname_captname_by_capid_gamedate(capt_id, game_date_db_style)
-#             team_name = info[0][0]
-#             capt_name = info[0][1]
-#             week_day = info[0][2]
-#             game_time = info[0][3]
-#             game_date_string_for_db = f"{year}-{month}-{day} {game_time}:00"
-#             name = sql_commands.check_player_name_into_base_by_playerid_date(player_id, game_date_string_for_db)
-#             player_id_game_date_for_check = (str(player_id) + game_date_db_style)
-#             cap_name_check = sql_commands.select_captname_by_capid_gamedate(player_id_game_date_for_check)
-#             lonely_player_name_check = sql_commands.select_lonely_player_name_by_lonely_playerid_gamedate(
-#                 player_id_game_date_for_check)
-#             if len(name) == 0:
-#                 if len(cap_name_check) == 0:
-#                     if len(lonely_player_name_check) == 0:
-#                         await state.update_data(team_name=team_name, capt_name=capt_name,
-#                                                 game_date=new_game_date_user_style,
-#                                                 week_day=week_day, game_time=game_time)
-#                         await bot.send_message(message.chat.id, text='Записали!', reply_markup=keyboards.ok_keyboard)
-#                         await PlayersStates.Show_all_info_to_player.set()
-#                     else:
-#                         await bot.send_message(message.chat.id,
-#                                                text=f"На выбранную дату вы зарегистрированы как "
-#                                                     f"одиночный игрок *{lonely_player_name_check[0][0]}*\n"
-#                                                     "Попробуйте выбрать другую дату 😊", parse_mode='Markdown')
-#                 else:
-#                     await bot.send_message(message.chat.id,
-#                                            text=f"На выбранную дату вы зарегистрированы как "
-#                                                 f"капитан *{cap_name_check[0][0]}*\n"
-#                                                 "Попробуйте выбрать другую дату 😊", parse_mode='Markdown')
-#             else:
-#                 await bot.send_message(message.chat.id, text=f'Игрок: *{name[0][0]}* уже зарегистрирован на эту дату\n'
-#                                                              f'Попробуйте выбрать другую дату', parse_mode='Markdown')
-#         else:
-#             await bot.send_message(message.chat.id, text="На такую дату капитан не зарегистрирован\n"
-#                                                          "Попробуйте ещё раз 🔁")
-#     # это сработает если прилетела какая-то ерунда вместо даты, например буквы
-#     else:
-#         await bot.send_message(message.chat.id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n"
-#                                                      "Жмите кнопочки ⬇️")
-#
-#
-# @dp.message_handler(Command('player_name'), state=PlayersStates.Finish_player_edit)
-# async def player_edit_name(message: types.Message):
-#     await bot.send_message(message.chat.id, text='Напишите ваше имя', reply_markup=keyboards.ReplyKeyboardRemove())
-#     await PlayersStates.Player_edit_name.set()
-#
-#
-# @dp.message_handler(content_types='text', state=PlayersStates.Player_edit_name)
-# async def catch_player_name(message: types.Message, state: FSMContext):
-#     new_player_name = message.text
-#     await state.update_data(player_name=new_player_name)
-#     await bot.send_message(message.chat.id, text=f"Ваше имя сохранено, *{new_player_name}* 😉",
-#                            reply_markup=keyboards.ok_keyboard, parse_mode='Markdown')
-#     await PlayersStates.Show_all_info_to_player.set()
-#
-#
-# @dp.message_handler(Command('player_comment'), state=PlayersStates.Finish_player_edit)
-# async def player_edit_comment(message: types.Message):
-#     await bot.send_message(message.chat.id, text='Есть ли у вас комментарии? 📝',
-#                            reply_markup=keyboards.yes_or_no)
-#     await PlayersStates.Player_edit_comments.set()
-#
-#
-# @dp.message_handler(content_types='text', state=PlayersStates.Player_edit_comments)
-# async def catch_player_comment(message: types.Message, state: FSMContext):
-#     if message.text == 'Да':
-#         await bot.send_message(message.chat.id, "Внесите ваш комментарий ✏️",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await PlayersStates.Player_edit_comment_enter.set()
-#     elif message.text == 'Нет':
-#         await state.update_data(player_comment='')
-#         await bot.send_message(message.chat.id, "Сохранили!", reply_markup=keyboards.ok_keyboard)
-#         await PlayersStates.Show_all_info_to_player.set()
-#     else:
-#         await message.answer("Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# @dp.message_handler(content_types='text', state=PlayersStates.Player_edit_comment_enter)
-# async def catch_player_comment_enter(message: types.Message, state: FSMContext):
-#     new_comment = message.text
-#     await state.update_data(player_comment=new_comment)
-#     await bot.send_message(message.chat.id, "Записали 👍", reply_markup=keyboards.ok_keyboard)
-#     await PlayersStates.Show_all_info_to_player.set()
-#
-#
-# """
-#
-# ---------------------------------->>>> ОКОНЧАНИЕ РЕГИСТРАЦИИ УЧАСТНИКА КОМАНДЫ <<<<-------------------------------------
-#
-# """
-#
-# """
-#
-# --------------------------------->>>> БЛОК КОДА ДЛЯ РЕГИСТРАЦИИ ОДИНОЧНОГО ИГРОКА <<<<----------------------------------
-#
-# """
-#
-#
-# # хэндлер ловит имя одинокого игрока
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_name)
-# async def lonely_player_name(message: types.Message, state: FSMContext):
-#     lon_player_name = message.text
-#     await state.update_data(lon_player_name=lon_player_name)
-#     await bot.send_message(message.chat.id, text=f"Ваше имя сохранено, *{lon_player_name}* 😉",
-#                            reply_markup=keyboards.edit_data, parse_mode='Markdown')
-#     await LonelyPlayerStates.Lonely_player_name_support.set()
-#
-#
-# # после внесения ссылки будем спрашивать про комментарии
-# # await bot.send_message(message.chat.id, text="Есть ли у вас комментарии? 📝",
-# #                                reply_markup=keyboards.yes_or_no)
-# #         await LonelyPlayerStates.Lonely_player_comment.set()
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_name_support)
-# async def lonely_player_name_support(message: types.Message):
-#     if message.text == 'Редактировать':
-#         await bot.send_message(message.chat.id, text="Напишите ваше имя",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Lonely_player_name.set()
-#     elif message.text == 'Далее':
-#         await bot.send_message(message.chat.id, text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться.",
-#                                reply_markup=keyboards.soc_network)
-#         await LonelyPlayerStates.Lonely_player_Choose_soc_net.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
-#
-#
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_Choose_soc_net)
-# async def lonely_player_soc_net(message: types.Message):
-#     # при нажатии кнопки пишем сообщение, переводим в следующий стейт
-#     if message.text == "Telegram":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш аккаунт Telegram",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Lonely_player_Telegram.set()
-#     elif message.text == "Instagram":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш Instagram аккаунт",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Lonely_player_Instagram.set()
-#     elif message.text == "Facebook":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку на ваш Facebook аккаунт",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Lonely_player_Facebook.set()
-#     elif message.text == "Другое":
-#         await bot.send_message(message.chat.id, text="Внесите ссылку", reply_markup=keyboards.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Lonely_player_Other_soc_net.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n'
-#                              'Нажимайте кнопочки ⬇️')
-#
-#
-# # хэндлер для введения ссылки на телеграм
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_Telegram)
-# async def lonely_player_link_telegram(message: types.Message, state: FSMContext):
-#     # сюда попадает ССЫЛКА НА ТЕЛЕГРАМ
-#     # проверка, чтобы ссылка на телегу начиналась с https://t.me/ или @ не была пустая
-#     if (message.text.startswith('https://t.me/') and len(message.text[13:]) != 0) or (
-#             message.text.startswith("@") and len(message.text[1:]) != 0):
-#         # сохраняем ссылку
-#         lon_player_link_telegram = message.text
-#         # записываем её в пространство имён состояния
-#         await state.update_data(lon_player_link=lon_player_link_telegram)
-#         # пишем сообщение о сохранении данных, открываем клавиатуру для редактир-я или перехода дальше
-#         await bot.send_message(message.chat.id, "Ссылка сохранена ✅", reply_markup=keyboards.edit_data)
-#         await LonelyPlayerStates.Lonely_player_link_support.set()
-#     else:
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер для введения ссылки на инстаграм
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_Instagram)
-# async def lonely_player_link_instagram(message: types.Message, state: FSMContext):
-#     # сюда попадает ССЫЛКА НА ИНСТАГРАМ
-#     # проверка, чтобы ссылка на инсту начиналась с чего надо и не была пустая
-#     if (message.text.startswith('https://www.instagram.com/') and len(message.text[26:]) != 0) or \
-#             (message.text.startswith('https://instagram.com/') and len(message.text[22:]) != 0):
-#         # сохраняем ссылку
-#         lon_player_link_inst = message.text
-#         # записываем её в пространство имён состояния под ключом "capt_link"
-#         await state.update_data(lon_player_link=lon_player_link_inst)
-#         # пишем, что всё сохранено, открываем клавиатуру для редактир-я или перехода дальше
-#         await bot.send_message(message.chat.id, "Ссылка на Instagram сохранена ✅", reply_markup=keyboards.edit_data)
-#         await LonelyPlayerStates.Lonely_player_link_support.set()
-#     # если ссылка начинается иначе
-#     else:
-#         # просим ещё раз написать
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер для введения ссылки на фэйсбук
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_Facebook)
-# async def lonely_player_link_facebook(message: types.Message, state: FSMContext):
-#     # сюда попадает ССЫЛКА НА ФЭЙСБУК
-#     # проверка, чтобы ссылка на фэйсбук начиналась с https://www.facebook.com/ и не была пустая
-#     if message.text.startswith('https://www.facebook.com/') and len(message.text[25:]) != 0:
-#         # сохраняем ссылку
-#         lon_player_link_fcbk = message.text
-#         # записываем её в пространство имён состояния под ключом "capt_link"
-#         await state.update_data(lon_player_link=lon_player_link_fcbk)
-#         # пишем сообщение, открываем клавиатуру для редактир-я или перехода дальше
-#         await bot.send_message(message.chat.id, "Ссылка на Facebook сохранена ✅", reply_markup=keyboards.edit_data)
-#         await LonelyPlayerStates.Lonely_player_link_support.set()
-#     # если ссылка начинается иначе
-#     else:
-#         # просим ещё раз написать
-#         await message.answer("Неверная ссылка. Попробуйте ещё раз 🔁")
-#
-#
-# # хэндлер для ловли ссылки на другую соц.сеть
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_Other_soc_net)
-# async def lonely_player_link_other_soc_net(message: types.Message, state: FSMContext):
-#     lon_player_link_other = message.text
-#     await state.update_data(lon_player_link=lon_player_link_other)
-#     await bot.send_message(message.chat.id, "Ссылка сохранена ✅", reply_markup=keyboards.edit_data)
-#     await LonelyPlayerStates.Lonely_player_link_support.set()
-#
-#
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_link_support)
-# async def lonely_player_link_telegram_support(message: types.Message):
-#     if message.text == 'Редактировать':
-#         # возвращаем юзера в предыдущий стейт, где он выбирал соц.сеть
-#         await bot.send_message(message.chat.id,
-#                                text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться",
-#                                reply_markup=keyboards.soc_network)
-#         await LonelyPlayerStates.Lonely_player_Choose_soc_net.set()
-#     # если нажата кнопка 'Далее'
-#     elif message.text == 'Далее':
-#         # задаём вопрос для след.стейта
-#         await bot.send_message(message.chat.id, text="Есть ли у вас комментарии? 📝", reply_markup=keyboards.yes_or_no)
-#         await LonelyPlayerStates.Lonely_player_comment.set()
-#     else:
-#         await bot.send_message(message.chat.id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_comment)
-# async def lonely_player_comment(message: types.Message, state: FSMContext):
-#     if message.text == 'Да':
-#         await bot.send_message(message.chat.id, text="Внесите ваш комментарий ✏️",
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Lonely_player_comment_support_enter.set()
-#     elif message.text == 'Нет':
-#         lon_player_comment = ''
-#         await state.update_data(lon_player_comment=lon_player_comment)
-#         await bot.send_message(message.chat.id, text="Сохранили!", reply_markup=keyboards.edit_data)
-#         await LonelyPlayerStates.Lonely_player_comment_support.set()
-#     else:
-#         await message.answer("Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
-#
-#
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_comment_support_enter)
-# async def lonely_player_comment_support_enter(message: types.Message, state: FSMContext):
-#     lon_player_comment = message.text
-#     await state.update_data(lon_player_comment=lon_player_comment)
-#     await bot.send_message(message.chat.id, text="Записали 👍", reply_markup=keyboards.edit_data)
-#     await LonelyPlayerStates.Lonely_player_comment_support.set()
-#
-#
-# @dp.message_handler(state=LonelyPlayerStates.Lonely_player_comment_support)
-# async def lonely_player_comment_support(message: types.Message):
-#     if message.text == 'Редактировать':
-#         await bot.send_message(message.chat.id, text='Есть ли у вас комментарии? 📝',
+"""
+
+------------------------------------->>>> БЛОК КОМАНД ДЛЯ РЕДАКТИРОВАНИЯ ДАННЫХ <<<<------------------------------------
+------------------------------------------->>>> ДЛЯ УЧАСТНИКА КОМАНДЫ <<<<----------------------------------------------
+"""
+
+
+@dp.message_handler(Command('game_date'), state=PlayersStates.Finish_player_edit)
+async def player_edit_game_date(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    data = await state.get_data()
+    referrer_id = data.get('referrer_id')
+    dates = sql_commands.all_dates_captain_registered_is_except_past(referrer_id)
+    if len(dates) == 1:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Капитан зарегистрирован только на 1 игру. Вы не можете поменять дату игры.',
+                                    reply_markup=keyboards.ok_keyboard)
+        await PlayersStates.Show_all_info_to_player.set()
+    elif len(dates) > 1:
+        dates_captain_registered_is = types.InlineKeyboardMarkup(row_width=1)
+        all_dates = sql_commands.all_dates_captain_registered_is_except_past(referrer_id)
+        list_of_buttons_with_dates = []
+        for one_date in all_dates:
+            one_button_date = types.InlineKeyboardButton(f"{one_date}", callback_data=f"{one_date}")
+            list_of_buttons_with_dates.append(one_button_date)
+        for date_button in list_of_buttons_with_dates:
+            dates_captain_registered_is.add(date_button)
+        # пишем игроку сообщение, открываем клавиатуру с этими датами для выбора
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text=f'Даты, на которые зарегистрирован ваш капитан ⬇️\n'
+                                         f'Выберите, когда хотите играть',
+                                    reply_markup=dates_captain_registered_is)
+        # это состояние будет отлавливать нажатие клавиш с датами и сохранять дату в FSM
+        await PlayersStates.Player_edit_game_date.set()
+    else:
+        await bot.send_message(message.chat.id,
+                               text='Произошла какая-то ошибка. \nКапитан, по чьей ссылке вы перешли, '
+                                    'не зарегистрирован ни на одну игру.', reply_markup=keyboards.ok_keyboard)
+        await PlayersStates.Have_a_nice_day.set()
+
+
+@dp.callback_query_handler(text_contains='', state=PlayersStates.Player_edit_game_date)
+async def catch_new_player_date(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    new_game_date_user_style = call['data']
+    day = new_game_date_user_style[0:2]
+    month = new_game_date_user_style[3:5]
+    year = new_game_date_user_style[6:10]
+    game_date_db_style = f"{year}{month}{day}"
+    data = await state.get_data()
+    capt_id = data.get('referrer_id')
+    player_id = data.get('player_id')
+    # проверяем чтобы сообщение, которое прилетело в этот хэндлер, если его очистить от ".", содержало цифры
+    if new_game_date_user_style.replace('.', '').isdigit():
+        dates = sql_commands.all_dates_captain_registered_is_except_past(capt_id)
+        # проверяем, чтобы на выбранную дату капитан действительно был зарегистрирован
+        if new_game_date_user_style in dates:
+            info = sql_commands.select_teamname_captname_by_capid_gamedate(capt_id, game_date_db_style)
+            team_name = info[0][0]
+            capt_name = info[0][1]
+            week_day = info[0][2]
+            game_time = info[0][3]
+            game_date_string_for_db = f"{year}-{month}-{day} {game_time}:00"
+            name = sql_commands.check_player_name_into_base_by_playerid_date(player_id, game_date_string_for_db)
+            player_id_game_date_for_check = (str(player_id) + game_date_db_style)
+            cap_name_check = sql_commands.select_captname_by_capid_gamedate(player_id_game_date_for_check)
+            lonely_player_name_check = sql_commands.select_lonely_player_name_by_lonely_playerid_gamedate(
+                player_id_game_date_for_check)
+            if len(name) == 0:
+                if len(cap_name_check) == 0:
+                    if len(lonely_player_name_check) == 0:
+                        await state.update_data(team_name=team_name, capt_name=capt_name,
+                                                game_date=new_game_date_user_style,
+                                                week_day=week_day, game_time=game_time)
+                        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Записали!',
+                                                    reply_markup=keyboards.ok_keyboard)
+                        await PlayersStates.Show_all_info_to_player.set()
+                    else:
+                        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                                    text=f"На выбранную дату вы зарегистрированы как "
+                                                         f"одиночный игрок *{lonely_player_name_check[0][0]}*\n"
+                                                         "Попробуйте выбрать другую дату 😊", parse_mode='Markdown')
+                else:
+                    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                                text=f"На выбранную дату вы зарегистрированы как "
+                                                     f"капитан *{cap_name_check[0][0]}*\n"
+                                                     "Попробуйте выбрать другую дату 😊", parse_mode='Markdown')
+            else:
+                await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                            text=f'Игрок: *{name[0][0]}* уже зарегистрирован на эту дату\n'
+                                                 f'Попробуйте выбрать другую дату', parse_mode='Markdown')
+        else:
+            await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                        text="На такую дату капитан не зарегистрирован\n"
+                                             "Попробуйте ещё раз 🔁")
+    # это сработает если прилетела какая-то ерунда вместо даты, например буквы
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁\n"
+                                         "Жмите кнопочки ⬇️")
+
+
+@dp.message_handler(Command('player_name'), state=PlayersStates.Finish_player_edit)
+async def player_edit_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Напишите ваше имя')
+    await PlayersStates.Player_edit_name.set()
+
+
+@dp.message_handler(content_types='text', state=PlayersStates.Player_edit_name)
+async def catch_player_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    new_player_name = message.text
+    await state.update_data(player_name=new_player_name)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text=f"Ваше имя сохранено, *{new_player_name}* 😉",
+                                reply_markup=keyboards.ok_keyboard, parse_mode='Markdown')
+    await PlayersStates.Show_all_info_to_player.set()
+
+
+@dp.message_handler(Command('player_comment'), state=PlayersStates.Finish_player_edit)
+async def player_edit_comment(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Есть ли у вас комментарии? 📝',
+                                reply_markup=keyboards.yes_or_no)
+    await PlayersStates.Player_edit_comments.set()
+
+
+@dp.callback_query_handler(text_contains='', state=PlayersStates.Player_edit_comments)
+async def catch_player_comment(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    if call['data'] == 'Да':
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ваш комментарий ✏️")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await PlayersStates.Player_edit_comment_enter.set()
+    elif call['data'] == 'Нет':
+        await state.update_data(player_comment='')
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Сохранили!", reply_markup=keyboards.ok_keyboard)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await PlayersStates.Show_all_info_to_player.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+@dp.message_handler(content_types='text', state=PlayersStates.Player_edit_comment_enter)
+async def catch_player_comment_enter(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    new_comment = message.text
+    await state.update_data(player_comment=new_comment)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Записали 👍",
+                                reply_markup=keyboards.ok_keyboard)
+    await PlayersStates.Show_all_info_to_player.set()
+
+
+"""
+
+---------------------------------->>>> ОКОНЧАНИЕ РЕГИСТРАЦИИ УЧАСТНИКА КОМАНДЫ <<<<-------------------------------------
+
+"""
+
+"""
+
+--------------------------------->>>> БЛОК КОДА ДЛЯ РЕГИСТРАЦИИ ОДИНОЧНОГО ИГРОКА <<<<----------------------------------
+
+"""
+
+
+# хэндлер ловит имя одинокого игрока
+@dp.message_handler(state=LonelyPlayerStates.Lonely_player_name)
+async def lonely_player_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    lon_player_name = message.text
+    await state.update_data(lon_player_name=lon_player_name)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                text=f"Ваше имя сохранено, *{lon_player_name}* 😉",
+                                reply_markup=keyboards.edit_data, parse_mode='Markdown')
+    await LonelyPlayerStates.Lonely_player_name_support.set()
+
+
+# после внесения ссылки будем спрашивать про комментарии
+# await bot.send_message(message.chat.id, text="Есть ли у вас комментарии? 📝",
 #                                reply_markup=keyboards.yes_or_no)
 #         await LonelyPlayerStates.Lonely_player_comment.set()
-#     elif message.text == 'Далее':
-#         await bot.send_message(message.chat.id,
-#                                text='следующее сообщение будет выводом всей введённой ранее информации',
-#                                reply_markup=keyboards.ok_keyboard)
-#         await LonelyPlayerStates.Show_info_to_lonely_player.set()
-#     else:
-#         await message.answer('Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
-#
-#
-# @dp.message_handler(state=LonelyPlayerStates.Show_info_to_lonely_player)
-# async def show_info_to_lonely_player(message: types.Message, state: FSMContext):
-#     data = await state.get_data()
-#     lon_player_tel_id_from_fsm = data.get('lon_player_id')
-#     game_date_user_style_from_fsm = data.get('game_date')
-#     day = game_date_user_style_from_fsm[0:2]
-#     month = game_date_user_style_from_fsm[3:5]
-#     year = game_date_user_style_from_fsm[6:10]
-#     date_db_style = f"{year}{month}{day}"
-#     week_day_from_fsm = data.get('week_day')
-#     game_time_from_fsm = data.get('game_time')
-#     lon_player_name_from_fsm = data.get('lon_player_name')
-#     lon_player_link_from_fsm = data.get('lon_player_link')
-#     lon_player_comment_from_fsm = data.get('lon_player_comment')
-#     date_string_for_db = f"{year}-{month}-{day} {game_time_from_fsm}:00"
-#     lon_player_tel_id_game_date_from_fsm = (str(data.get('lon_player_id')) + date_db_style)
-#     if message.text == "Ок":
-#         # у игрока НЕТ КОММЕНТАРИЕВ
-#         if len(lon_player_comment_from_fsm) == 0:
-#             await bot.send_message(message.chat.id,
-#                                    text=f"Дата игры: *{game_date_user_style_from_fsm}*\n"
-#                                         f"День недели: *{week_day_from_fsm}*\n"
-#                                         f"Время игры: *{game_time_from_fsm}*\n"
-#                                         f"Ваше имя: *{lon_player_name_from_fsm}*\n"
-#                                         f"Ссылка на вашу соц.сеть: *{lon_player_link_from_fsm}*",
-#                                    reply_markup=keyboards.complete_registr,
-#                                    parse_mode='Markdown')
-#         # у игрока ЕСТЬ КОММЕНТАРИЙ
-#         else:
-#             await bot.send_message(message.chat.id,
-#                                    text=f"Дата игры: *{game_date_user_style_from_fsm}*\n"
-#                                         f"День недели: *{week_day_from_fsm}*\n"
-#                                         f"Время игры: *{game_time_from_fsm}*\n"
-#                                         f"Ваше имя: *{lon_player_name_from_fsm}*\n"
-#                                         f"Ссылка на вашу соц.сеть: *{lon_player_link_from_fsm}*\n"
-#                                         f"Ваш комментарий: *{lon_player_comment_from_fsm}*",
-#                                    reply_markup=keyboards.complete_registr,
-#                                    parse_mode='Markdown')
-#     elif message.text == "Завершить регистрацию":
-#         sql_commands.saving_lonely_player_to_database(lon_player_tel_id_game_date_from_fsm, lon_player_tel_id_from_fsm,
-#                                                       date_string_for_db, week_day_from_fsm, lon_player_name_from_fsm,
-#                                                       lon_player_link_from_fsm, lon_player_comment_from_fsm)
-#         await bot.send_message(message.chat.id, text="Поздравляем, вы зарегистрированы на игру! 🥳",
-#                                reply_markup=types.ReplyKeyboardRemove())
-#         await state.finish()
-#     elif message.text == "Редактировать данные":
-#         await bot.send_message(message.chat.id,
-#                                text='Выберите команду и нажмите на неё для редактирования конкретных данных',
-#                                reply_markup=keyboards.ReplyKeyboardRemove())
-#         await bot.send_message(message.chat.id, text=f'{commands.lonely_player_commands}',
-#                                reply_markup=types.ReplyKeyboardRemove())
-#         await LonelyPlayerStates.Finish_lonely_player_edit.set()
-#     else:
-#         await message.answer('Что-то не так. Попробуйте ещё раз 🔁')
-#
-#
+@dp.callback_query_handler(text_contains='', state=LonelyPlayerStates.Lonely_player_name_support)
+async def lonely_player_name_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == 'Редактировать':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Напишите ваше имя")
+        await LonelyPlayerStates.Lonely_player_name.set()
+    elif call['data'] == 'Далее':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться.",
+                                    reply_markup=keyboards.soc_network)
+        await LonelyPlayerStates.Lonely_player_Choose_soc_net.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+
+
+@dp.callback_query_handler(text_contains='', state=LonelyPlayerStates.Lonely_player_Choose_soc_net)
+async def lonely_player_soc_net(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    # при нажатии кнопки пишем сообщение, переводим в следующий стейт
+    if call['data'] == "Telegram":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш аккаунт Telegram")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Lonely_player_Telegram.set()
+    elif call['data'] == "Instagram":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш Instagram аккаунт")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Lonely_player_Instagram.set()
+    elif call['data'] == "Facebook":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку на ваш Facebook аккаунт")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Lonely_player_Facebook.set()
+    elif call['data'] == "Другое":
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ссылку")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Lonely_player_Other_soc_net.set()
+    else:
+        sent_message = await bot.send_message(chat_id, text='Ошибка. Попробуйте ещё раз 🔁')
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+# хэндлер для введения ссылки на телеграм
+@dp.message_handler(state=LonelyPlayerStates.Lonely_player_Telegram)
+async def lonely_player_link_telegram(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает ССЫЛКА НА ТЕЛЕГРАМ
+    # проверка, чтобы ссылка на телегу начиналась с https://t.me/ или @ не была пустая
+    if (message.text.startswith('https://t.me/') and len(message.text[13:]) != 0) or (
+            message.text.startswith("@") and len(message.text[1:]) != 0):
+        # сохраняем ссылку
+        lon_player_link_telegram = message.text
+        # записываем её в пространство имён состояния
+        await state.update_data(lon_player_link=lon_player_link_telegram)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем сообщение о сохранении данных, открываем клавиатуру для редактир-я или перехода дальше
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка сохранена ✅",
+                                    reply_markup=keyboards.edit_data)
+        await LonelyPlayerStates.Lonely_player_link_support.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер для введения ссылки на инстаграм
+@dp.message_handler(state=LonelyPlayerStates.Lonely_player_Instagram)
+async def lonely_player_link_instagram(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает ССЫЛКА НА ИНСТАГРАМ
+    # проверка, чтобы ссылка на инсту начиналась с чего надо и не была пустая
+    if (message.text.startswith('https://www.instagram.com/') and len(message.text[26:]) != 0) or \
+            (message.text.startswith('https://instagram.com/') and len(message.text[22:]) != 0):
+        # сохраняем ссылку
+        lon_player_link_inst = message.text
+        # записываем её в пространство имён состояния под ключом "capt_link"
+        await state.update_data(lon_player_link=lon_player_link_inst)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем, что всё сохранено, открываем клавиатуру для редактир-я или перехода дальше
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка на Instagram сохранена ✅",
+                                    reply_markup=keyboards.edit_data)
+        await LonelyPlayerStates.Lonely_player_link_support.set()
+    # если ссылка начинается иначе
+    else:
+        # просим ещё раз написать
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер для введения ссылки на фэйсбук
+@dp.message_handler(state=LonelyPlayerStates.Lonely_player_Facebook)
+async def lonely_player_link_facebook(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    # сюда попадает ССЫЛКА НА ФЭЙСБУК
+    # проверка, чтобы ссылка на фэйсбук начиналась с https://www.facebook.com/ и не была пустая
+    if message.text.startswith('https://www.facebook.com/') and len(message.text[25:]) != 0:
+        # сохраняем ссылку
+        lon_player_link_fcbk = message.text
+        # записываем её в пространство имён состояния под ключом "capt_link"
+        await state.update_data(lon_player_link=lon_player_link_fcbk)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        # пишем сообщение, открываем клавиатуру для редактир-я или перехода дальше
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка на Facebook сохранена ✅",
+                                    reply_markup=keyboards.edit_data)
+        await LonelyPlayerStates.Lonely_player_link_support.set()
+    # если ссылка начинается иначе
+    else:
+        # просим ещё раз написать
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Неверная ссылка. Попробуйте ещё раз 🔁")
+
+
+# хэндлер для ловли ссылки на другую соц.сеть
+@dp.message_handler(state=LonelyPlayerStates.Lonely_player_Other_soc_net)
+async def lonely_player_link_other_soc_net(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    lon_player_link_other = message.text
+    await state.update_data(lon_player_link=lon_player_link_other)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Ссылка сохранена ✅",
+                                reply_markup=keyboards.edit_data)
+    await LonelyPlayerStates.Lonely_player_link_support.set()
+
+
+@dp.callback_query_handler(text_contains='', state=LonelyPlayerStates.Lonely_player_link_support)
+async def lonely_player_link_telegram_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == 'Редактировать':
+        # возвращаем юзера в предыдущий стейт, где он выбирал соц.сеть
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Выберите соц.сеть/мессенджер, по которой с вами можно связаться",
+                                    reply_markup=keyboards.soc_network)
+        await LonelyPlayerStates.Lonely_player_Choose_soc_net.set()
+    # если нажата кнопка 'Далее'
+    elif call['data'] == 'Далее':
+        # задаём вопрос для след.стейта
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Есть ли у вас комментарии? 📝",
+                                    reply_markup=keyboards.yes_or_no)
+        await LonelyPlayerStates.Lonely_player_comment.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+
+
+@dp.callback_query_handler(text_contains='', state=LonelyPlayerStates.Lonely_player_comment)
+async def lonely_player_comment(call: types.CallbackQuery, state: FSMContext):
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
+    if call['data'] == 'Да':
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Внесите ваш комментарий ✏️")
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Lonely_player_comment_support_enter.set()
+    elif call['data'] == 'Нет':
+        lon_player_comment = ''
+        await state.update_data(lon_player_comment=lon_player_comment)
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Сохранили!", reply_markup=keyboards.edit_data)
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Lonely_player_comment_support.set()
+    else:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        sent_message = await bot.send_message(chat_id, text="Произошла какая-то ошибка. Попробуйте ещё раз 🔁")
+        await state.update_data(sent_message_id=sent_message.message_id)
+
+
+@dp.message_handler(state=LonelyPlayerStates.Lonely_player_comment_support_enter)
+async def lonely_player_comment_support_enter(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    message_id = message.message_id
+    chat_id = message.chat.id
+    lon_player_comment = message.text
+    await state.update_data(lon_player_comment=lon_player_comment)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text="Записали 👍",
+                                reply_markup=keyboards.edit_data)
+    await LonelyPlayerStates.Lonely_player_comment_support.set()
+
+
+@dp.callback_query_handler(text_contains='', state=LonelyPlayerStates.Lonely_player_comment_support)
+async def lonely_player_comment_support(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    if call['data'] == 'Редактировать':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id, text='Есть ли у вас комментарии? 📝',
+                                    reply_markup=keyboards.yes_or_no)
+        await LonelyPlayerStates.Lonely_player_comment.set()
+    elif call['data'] == 'Далее':
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='следующее сообщение будет выводом всей введённой ранее информации',
+                                    reply_markup=keyboards.ok_keyboard)
+        await LonelyPlayerStates.Show_info_to_lonely_player.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Произошла какая-то ошибка. Попробуйте ещё раз 🔁')
+
+
+@dp.callback_query_handler(text_contains='', state=LonelyPlayerStates.Show_info_to_lonely_player)
+async def show_info_to_lonely_player(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        sent_message_id = data['sent_message_id']
+    chat_id = call.message.chat.id
+    data = await state.get_data()
+    lon_player_tel_id_from_fsm = data.get('lon_player_id')
+    game_date_user_style_from_fsm = data.get('game_date')
+    day = game_date_user_style_from_fsm[0:2]
+    month = game_date_user_style_from_fsm[3:5]
+    year = game_date_user_style_from_fsm[6:10]
+    date_db_style = f"{year}{month}{day}"
+    week_day_from_fsm = data.get('week_day')
+    game_time_from_fsm = data.get('game_time')
+    lon_player_name_from_fsm = data.get('lon_player_name')
+    lon_player_link_from_fsm = data.get('lon_player_link')
+    lon_player_comment_from_fsm = data.get('lon_player_comment')
+    date_string_for_db = f"{year}-{month}-{day} {game_time_from_fsm}:00"
+    lon_player_tel_id_game_date_from_fsm = (str(data.get('lon_player_id')) + date_db_style)
+    if call['data'] == "Ок":
+        await bot.delete_message(chat_id=chat_id, message_id=sent_message_id)
+        # у игрока НЕТ КОММЕНТАРИЕВ
+        if len(lon_player_comment_from_fsm) == 0:
+            sent_info_message = await bot.send_message(chat_id,
+                                                       text=f"Дата игры: *{game_date_user_style_from_fsm}*\n"
+                                                            f"День недели: *{week_day_from_fsm}*\n"
+                                                            f"Время игры: *{game_time_from_fsm}*\n"
+                                                            f"Ваше имя: *{lon_player_name_from_fsm}*\n"
+                                                            f"Ссылка на вашу соц.сеть: *{lon_player_link_from_fsm}*",
+                                                       parse_mode='Markdown')
+        # у игрока ЕСТЬ КОММЕНТАРИЙ
+        else:
+            sent_info_message = await bot.send_message(chat_id,
+                                                       text=f"Дата игры: *{game_date_user_style_from_fsm}*\n"
+                                                            f"День недели: *{week_day_from_fsm}*\n"
+                                                            f"Время игры: *{game_time_from_fsm}*\n"
+                                                            f"Ваше имя: *{lon_player_name_from_fsm}*\n"
+                                                            f"Ссылка на вашу соц.сеть: *{lon_player_link_from_fsm}*\n"
+                                                            f"Ваш комментарий: *{lon_player_comment_from_fsm}*",
+                                                       parse_mode='Markdown')
+        sent_message = await bot.send_message(chat_id, text='Всё ли верно?', reply_markup=keyboards.complete_registr)
+        await state.update_data(sent_message_id=sent_message.message_id,
+                                sent_info_message_id=sent_info_message.message_id)
+    elif call['data'] == "Завершить регистрацию":
+        sql_commands.saving_lonely_player_to_database(lon_player_tel_id_game_date_from_fsm, lon_player_tel_id_from_fsm,
+                                                      date_string_for_db, week_day_from_fsm, lon_player_name_from_fsm,
+                                                      lon_player_link_from_fsm, lon_player_comment_from_fsm)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text="Поздравляем, вы зарегистрированы на игру! 🥳")
+        await state.finish()
+    elif call['data'] == "Редактировать данные":
+        async with state.proxy() as data:
+            sent_message_id = data['sent_message_id']
+            sent_info_message_id = data['sent_info_message_id']
+        await bot.delete_message(chat_id=chat_id, message_id=sent_info_message_id)
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Выберите команду и нажмите на неё для редактирования конкретных данных')
+        sent_message = await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                                   text=f'{commands.lonely_player_commands}')
+        await state.update_data(sent_message_id=sent_message.message_id)
+        await LonelyPlayerStates.Finish_lonely_player_edit.set()
+    else:
+        await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
+                                    text='Что-то не так. Попробуйте ещё раз 🔁')
+
+
 # """
 #
 # ------------------------------------->>>> БЛОК КОМАНД ДЛЯ РЕДАКТИРОВАНИЯ ДАННЫХ <<<<------------------------------------
