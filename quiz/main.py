@@ -104,22 +104,22 @@ class LonelyPlayerStates(StatesGroup):
     Lonely_player_comment_support = State()  # callback
     Lonely_player_comment_support_enter = State()  # message
     Show_info_to_lonely_player = State()  # callback
-    Finish_lonely_player_edit = State()
-    Lonely_player_edit_game_date = State()
-    Lonely_player_edit_name = State()
-    Lonely_player_edit_comments = State()
-    Lonely_player_edit_comment_enter = State()
+    Finish_lonely_player_edit = State()  # message
+    Lonely_player_edit_game_date = State()  # callback
+    Lonely_player_edit_name = State()  # message
+    Lonely_player_edit_comments = State()  # callback
+    Lonely_player_edit_comment_enter = State()  # message
     Lonely_player_Choose_soc_net = State()  # callback
     Lonely_player_Telegram = State()  # message
     Lonely_player_Instagram = State()  # message
     Lonely_player_Facebook = State()  # message
     Lonely_player_Other_soc_net = State()  # message
     Lonely_player_link_support = State()  # callback
-    Edit_lonely_player_link = State()
-    Edit_lonely_player_link_telegram = State()
-    Edit_lonely_player_link_instagram = State()
-    Edit_lonely_player_link_facebook = State()
-    Edit_lonely_player_link_other_soc_net = State()
+    Edit_lonely_player_link = State()  # callback
+    Edit_lonely_player_link_telegram = State()  # message
+    Edit_lonely_player_link_instagram = State()  # message
+    Edit_lonely_player_link_facebook = State()  # message
+    Edit_lonely_player_link_other_soc_net = State()  # message
 
 
 # хэндлер отвечает на команду /start
@@ -186,7 +186,7 @@ async def welcome(message: types.Message, state: FSMContext):
                 await bot.delete_message(chat_id=chat_id, message_id=message_id)
                 # информируем игрока об этом
                 sent_message = await bot.send_message(message.chat.id,
-                                                      text=f'Игрок: *{name[0][0]}* уже зарегистрирован на игру датой: \n*{dates[0]}*\n',
+                                                      text=f'Игрок: *{name[0][0]}* уже зарегистрирован на игру датой: \n*{dates[0]}*',
                                                       reply_markup=keyboards.ok_keyboard, parse_mode='Markdown')
                 await state.update_data(sent_message_id=sent_message.message_id)
                 # назначим вспомогательный стейт для плавного выхода из ситуации (принимает "ок")
@@ -223,14 +223,24 @@ async def welcome(message: types.Message, state: FSMContext):
     # сюда попадают те, у кого пустая команда /start
     # т.е. либо капитаны, желающие зарегистрироваться, либо одинокие игроки и выбирают дату игры
     else:
-        # удаляем сообщение от ПОЛЬЗОВАТЕЛЯ
-        await bot.delete_message(chat_id=chat_id, message_id=message_id)
-        sent_message = await bot.send_message(message.chat.id,
-                                              text=f"Привет, *{message.from_user.first_name}*!\n"
-                                                   f"Выберите дату игры",
-                                              reply_markup=keyboards.game_dates_buttons, parse_mode='Markdown')
-        await state.update_data(sent_message_id=sent_message.message_id)
-        await CaptainStates.Choose_date.set()
+        all_dates_ever = sql_commands.all_dates_from_game_dates()
+        if len(all_dates_ever) != 0:
+            # удаляем сообщение от ПОЛЬЗОВАТЕЛЯ
+            await bot.delete_message(chat_id=chat_id, message_id=message_id)
+            sent_message = await bot.send_message(message.chat.id,
+                                                  text=f"Привет, *{message.from_user.first_name}*!\n"
+                                                       f"Выберите дату игры",
+                                                  reply_markup=keyboards.game_dates_buttons, parse_mode='Markdown')
+            await state.update_data(sent_message_id=sent_message.message_id)
+            await CaptainStates.Choose_date.set()
+        else:
+            await bot.delete_message(chat_id=chat_id, message_id=message_id)
+            sent_message = await bot.send_message(message.chat.id,
+                                                  text="К сожалению, на данный момент даты игр не запланированы\n"
+                                                       "Попробуйте позднее",
+                                                  reply_markup=keyboards.ok_keyboard)
+            await state.update_data(sent_message_id=sent_message.message_id)
+            await PlayersStates.Have_a_nice_day.set()
 
 
 # здесь сохраняем выбранную дату игры
@@ -396,13 +406,13 @@ async def captain_or_participant(call: types.CallbackQuery, state: FSMContext):
             else:
                 await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
                                             text=f"Вы уже зарегистрированы на данную игру "
-                                                 f"как игрок *{player_name_from_db[0][0]}*"
+                                                 f"как игрок *{player_name_from_db[0][0]}*\n"
                                                  f"Попробуйте выбрать другую дату 😊",
                                             parse_mode='Markdown', reply_markup=keyboards.game_dates_buttons)
                 await CaptainStates.Choose_date.set()
         else:
             await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
-                                        text=f'Вы уже зарегистрированы на данную игру как капитан *{cap_name[0][0]}*'
+                                        text=f'Вы уже зарегистрированы на данную игру как капитан *{cap_name[0][0]}*\n'
                                              f'Попробуйте выбрать другую дату 😊',
                                         parse_mode='Markdown', reply_markup=keyboards.game_dates_buttons)
             await CaptainStates.Choose_date.set()
@@ -1217,7 +1227,7 @@ async def catch_captain_capt_phone(message: types.Message, state: FSMContext):
         new_capt_phone_int = int(
             new_capt_phone.replace('+', '').replace(' ', '').replace('(', '').replace(')', ''))
     except ValueError:
-        await message.answer('Неверный ввод.\nПопробуйте ещё раз 🔁"', reply_markup=types.ReplyKeyboardRemove())
+        await message.answer('Неверный ввод.\nПопробуйте ещё раз 🔁"')
     else:
         if new_capt_phone.startswith('+48') or new_capt_phone.startswith('48'):
             if len(str(new_capt_phone_int).replace('48', '')) == 9:
@@ -3123,12 +3133,12 @@ async def catch_new_date_lonely_player(call: types.CallbackQuery, state: FSMCont
             else:
                 await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
                                             text=f"Вы уже зарегистрированы на данную игру "
-                                                 f"как игрок *{player_name_from_db[0][0]}*"
+                                                 f"как игрок *{player_name_from_db[0][0]}*\n"
                                                  f"Попробуйте выбрать другую дату 😊",
                                             parse_mode='Markdown', reply_markup=keyboards.game_dates_buttons)
         else:
             await bot.edit_message_text(chat_id=chat_id, message_id=sent_message_id,
-                                        text=f'Вы уже зарегистрированы на данную игру как капитан *{cap_name[0][0]}*'
+                                        text=f'Вы уже зарегистрированы на данную игру как капитан *{cap_name[0][0]}*\n'
                                              f'Попробуйте выбрать другую дату 😊',
                                         parse_mode='Markdown', reply_markup=keyboards.game_dates_buttons)
     else:
